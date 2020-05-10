@@ -1,0 +1,52 @@
+{% extends 'Sobti/base.html' %}	
+
+{% block title %}Pages in Manuscript: {{ manuscript.text.title }} – {{ manuscript.accession_number }}{% endblock %}
+
+{% block content %}
+
+	<h1>Pages in Manuscript: {{ manuscript.text.title }} – {{ manuscript.accession_number }}</h1>
+
+
+	{% if manuscript %}
+		<ul class="list-group list-group-flush">
+			{% for page in manuscript.page_set.all %}
+				<li class="list-group-item">
+					<a href="{% url 'sobti:page_detail' text.id manuscript.id page.id %}">
+						{{ manuscript.text.title }} – {{ manuscript.collection.name }}: {{ manuscript.accession_number }}, Page {{ page.id }}
+						{% if page.image_thumbnail %}
+							<img src="{{ page.image_thumbnail.url }}" />
+						{% else %}
+							<a href="{% url 'sobti:page_process' text.id manuscript.id page.id %}"> [[Process Page]]</a>
+						{% endif %}
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p>No pages have been added for {{ manuscript.text.title }} – {{ manuscript.accession_number }}.</p>
+	{% endif %}
+	
+	
+	<!-- <h2>{{ template_filename }}</h2> -->
+	
+	
+		
+{% endblock %}
+
+{% block footer %}
+	<h3><a href="{% url 'sobti:texts' %}">Back to Text List</a></h3>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+	
+	////////////////////////////////////////////////////////////////////////////
+	// DOCUMENT LOAD 
+	////////////////////////////////////////////////////////////////////////////
+	$( document ).ready( function(){
+		// $("#add_text").on( 'click', function(e) {
+		// 
+		// });
+	});
+		
+{% endblock %}

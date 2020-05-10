@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Page Detail</title>
+		
+		<!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+		<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script> -->
+		
+		
+		<style>
+			* {
+				font-family: "Garamond Premier Pro", "Adobe Garamond", Garamond, serif;
+				margin: 0;
+				padding: 0;
+			}
+			#text {
+				width: 200px;
+				height: 500px;
+				float: left;
+				background-color: blue;
+			}
+			#region_list {
+				width: 100px;
+				height: 500px;
+				float: left;
+				background-color: green;
+			}
+			
+			.work_surface {
+				width: 100%;
+				height: 80vh;
+			}
+				
+		</style>
+		
+		<script type="text/javascript">
+			var canvas = document.getElementById("canvas"),
+			ctx = canvas.getContext("2d");
+
+			canvas.width = 934;
+			canvas.height = 622;
+
+
+			var background = new Image();
+			// background.src = "{{ facsimile.url }}";
+			background.src = "http://i.imgur.com/yf6d9SX.jpg";
+
+			background.onload = function(){
+				ctx.drawImage(background,0,0);   
+			}
+		</script>
+		
+	</head>
+	<body>
+		
+		{% if page %}
+			
+			<div class="workspace">
+				<div class="row">
+					<h1>
+						<a href="{% url 'sobti:manuscripts' page.manuscript.text.id %}">{{ page.manuscript.text.title }}</a> – 
+						<a href="{% url 'sobti:pages' page.manuscript.text.id page.manuscript.id %}">{{ page.manuscript.collection.name }}: {{ page.manuscript.accession_number }}</a>, 
+						Page {{ page.number_in_manuscript }}
+					</h1>
+				</div>
+				<div class="row">
+					<canvas id="canvas"></canvas>
+					<!-- <div class="col-7">
+						{% if facsimile %}
+							<img src="{{ facsimile.url }}" class="img-fluid" />							
+						{% else %}
+							<p>Error producing composite image.</p>
+						{% endif %}
+					</div> -->
+					
+					
+					<div class="col-5 overflow-auto">
+						
+						<!-- 
+						<div id="accordion">
+							
+							{% for line in page.line_set.all %}
+							<h3>Line {{ line.number_in_page }}</h3>
+						  <div>
+									<ul id="sortable">
+										{% for glyph in line.glyph_set.all %}
+											<li class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
+												{{ glyph.number_in_line }}<img src="{{ glyph.image.url }}" class="img-fluid" />
+											</li>
+										{% endfor %}
+									</ul>
+						  </div>
+							{% endfor %}
+						</div> -->
+						
+						
+
+						<div class="accordion" id="lineSet"  style="height: {{ facsimile.height }}px;">
+							
+							{% for line in page.line_set.all %}
+							<div class="card">
+								
+								<div class="card-header" id="line{{ line.number_in_page }}">
+									<h2 class="mb-0">
+										<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#glyphs{{ line.number_in_page }}" aria-expanded="true" aria-controls="glyphs{{ line.number_in_page }}">
+											Line {{ line.number_in_page }}
+										</button>
+									</h2>
+								</div>
+								<div id="glyphs{{ line.number_in_page }}" class="collapse show" aria-labelledby="line{{ line.number_in_page }}" data-parent="#lineSet">
+									<div class="card-body">
+										
+										<ul class="list-group">
+											
+											{% for glyph in line.glyph_set.all %}
+												<li class="list-group-item">
+													
+													
+													<div class="input-group">
+														<div class="input-group-prepend">
+															<span class="input-group-text">{{ glyph.number_in_line }}</span>
+														</div>
+														<div class="input-group-prepend">
+															<span class="input-group-text"><img src="{{ glyph.image.url }}" class="img-fluid" /></span>
+														</div>
+														<input type="text" aria-label="First name" class="form-control">
+														<input type="text" aria-label="Last name" class="form-control">
+													</div>
+												</li>
+											{% endfor %}
+										</ul>
+										
+									</div>
+								</div>
+							
+							</div>
+							{% endfor %}
+							
+						</div>
+						
+						<div class="input-group input-group-lg">
+							<div class="input-group-prepend">
+								<span class="input-group-text" id="inputGroup-sizing-lg">Line </span>
+							</div>
+							<input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
+						</div>
+
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text">First and last name</span>
+							</div>
+							<input type="text" aria-label="First name" class="form-control">
+							<input type="text" aria-label="Last name" class="form-control">
+						</div>
+						
+						
+						
+						
+					</div>
+				</div>
+			</div>
+			
+			
+		{% else %}
+		<p>No page avabilable.</p>
+		{% endif %}
+		
+		<div class="container-fluid">
+			<div class="row">
+				<table class="table table-striped">
+					<tbody>
+						<tr>
+							<th scope="row">Text</th>
+							<td>{{ page.manuscript.text.title }}</td>
+						</tr>
+						<tr>
+							<th scope="row">Collection</th>
+							<td>{{ page.manuscript.collection.name }}</td>
+						</tr>
+						<tr>
+							<th scope="row">Accession Number</th>
+							<td>{{ page.manuscript.accession_number }}</td>
+						</tr>
+						<tr>
+							<th scope="row">Page</th>
+							<td>{{ page.number_in_manuscript }}</td>
+						</tr>
+						<tr>
+							<th scope="row">Image Name</th>
+							<td>{{ page.image.name }}</td>
+						</tr>
+						<tr>
+							<th scope="row">Image URL</th>
+							<td>{{ page.image.url }}</td>
+						</tr>
+						<tr>
+							<th scope="row">Image Path</th>
+							<td>{{ page.image.path }}</td>
+						</tr>
+						<tr>
+							<th scope="row">Label</th>
+							<td></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		
+		
+		
+		
+		
+		{% if page.image_thumbnail %}
+			<img src="{{ page.image_thumbnail.url }}" class="img-fluid" />
+		{% else %}
+			<p>Error producing thumbnail image.</p>
+		{% endif %}
+		
+<div class="container">
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-4">
+<div class="col">Column</div>
+<div class="col">Column</div>
+<div class="col">Column</div>
+<div class="col">Column</div>
+</div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col">col</div>
+    <div class="col">col</div>
+    <div class="col">col</div>
+    <div class="col">col</div>
+  </div>
+  <div class="row">
+    <div class="col-8">col-8</div>
+    <div class="col-4">
+			
+<div class="input-group input-group-lg">
+	<div class="input-group-prepend">
+		<span class="input-group-text" id="inputGroup-sizing-lg">Large</span>
+	</div>
+	<input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
+</div>
+
+<div class="input-group">
+	<div class="input-group-prepend">
+		<span class="input-group-text">First and last name</span>
+	</div>
+	<input type="text" aria-label="First name" class="form-control">
+	<input type="text" aria-label="Last name" class="form-control">
+</div>
+		
+		</div>
+  </div>
+</div>
+
+
+
+
+
+	</body>
+</html>

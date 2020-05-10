@@ -1,0 +1,228 @@
+{% extends 'Sobti/base.html' %}	
+
+{% load static %}
+
+{% block title %}Ⲥⲟⲃϯ: Glyph Labeling Workspace{% endblock %}
+
+
+{% block stylesheet %}
+	<link rel="stylesheet" type="text/css" href="{% static 'css/sobti_style.css' %}">
+	{% block style_sign_list %}{% endblock style_sign_list %}
+{% endblock stylesheet %}
+
+
+{% block content %}
+
+	{% if page %}
+		<div class="dashboard">
+			<div class="header">
+				<h1>
+					<a href="{% url 'sobti:manuscripts' page.manuscript.text.id %}">{{ page.manuscript.text.title }}</a> – 
+					<a href="{% url 'sobti:pages' page.manuscript.text.id page.manuscript.id %}">{{ page.manuscript.collection.name }}: {{ page.manuscript.accession_number }}</a>, 
+					Page {{ page.number_in_manuscript }}
+				</h1>
+			</div>
+				
+			<div class="work_surface">
+					
+				<div class="text_wrapper">
+					<canvas id="canvas"></canvas>
+				</div>
+				
+				{% block sign_list %}{% endblock sign_list %}
+			</div>
+		</div>
+	{% endif %}
+	
+{% endblock content %}
+
+
+
+{% block javascript %}
+	<script src="{% static 'js/jquery-sortable.js' %}"></script>
+	
+	<script type="text/javascript">
+		var dbData = JSON.parse( '{{ data_package|safe }}' );	
+		var nLines = dbData.lines.length;
+	  var vCMLines = iris(nLines);
+		vCMGlyphs = new Array(nLines).fill([]);
+		
+		////////////////////////////////////////////////////////////////////////////
+		// DOCUMENT LOAD 
+		////////////////////////////////////////////////////////////////////////////
+	  $( document ).ready( function(){
+			
+			{% block sign_list_js %}{% endblock sign_list_js %}
+			
+			// Set appearance
+			clearCanvas();
+			for(var i=0; i<nLines; i++) {
+				$("#line_header_"+dbData.lines[i].pk).css('color', "rgb(" + vCMLines[i].toString() + ")");
+				$("#line_header_"+dbData.lines[i].pk).css('background-color', "rgb(" + vCMLines[i].toString() + ", 0.3)");
+				$("#line_header_"+dbData.lines[i].pk).css('border', "5px solid rgb(" + vCMLines[i].toString() + ")");
+				
+				var nGlyphs = dbData.lines[i].glyphs.length;
+				vCMGlyphs[i] = iris(nGlyphs);
+				for(var j=0; j<nGlyphs; j++) {
+					// Make the label colors match
+					// $("#glyph_mover_"+dbData.lines[i].glyphs[j].pk).css('color', "rgb(" + vCMGlyphs[i][j].map(function(f) {return f*0.5+127;}).toString() + ")");
+					$("#glyph_mover_"+dbData.lines[i].glyphs[j].pk).css('background-color', "rgb(" + vCMGlyphs[i][j].toString() + ")");
+				}
+			}
+			// Setup data stores and event handlers
+			for(var i=0; i<nLines; i++) {
+				// Data stored in elements for later retrieval
+				$("#draw_line_"+dbData.lines[i].pk).data('i',i);
+				$("#draw_line_"+dbData.lines[i].pk).data('n',dbData.lines.length);
+				$("#draw_line_"+dbData.lines[i].pk).data('polygon', dbData.lines[i].polygon);
+				// Rollover events for displaying polygons
+				$("#draw_line_"+dbData.lines[i].pk).on( 'mouseout', function(e) {
+	        clearCanvas();
+	      });				
+	      $("#draw_line_"+dbData.lines[i].pk).on( 'mouseover', function(e) {
+	        e.preventDefault();
+					clearCanvas();
+					i = $(this).data('i');
+					sFillColor = "rgba(" + [].concat(vCMLines[i], [0.8]).toString() + ")";
+					sStrokeColor = "rgba(" + [].concat(vCMLines[i], [0.7]).toString() + ")";
+					console.log(sFillColor)
+					ctx.fillPolygon($(this).data('polygon'), null, sStrokeColor, 6);
+				});
+				
+				// GLYPH LOOP
+				var nGlyphs = dbData.lines[i].glyphs.length;
+				vCMGlyphs[i] = iris(nGlyphs);
+				for(var j=0; j<nGlyphs; j++) {	
+					// Data stored in elements for later retrieval
+					$("#draw_glyph_"+dbData.lines[i].glyphs[j].pk).data('i',i);
+					$("#draw_glyph_"+dbData.lines[i].glyphs[j].pk).data('j',j);
+					$("#draw_glyph_"+dbData.lines[i].glyphs[j].pk).data('n',nGlyphs);
+					$("#draw_glyph_"+dbData.lines[i].glyphs[j].pk).data('polygon', dbData.lines[i].glyphs[j].polygon);
+					// Rollover events for displaying polygons
+					$("#draw_glyph_"+dbData.lines[i].glyphs[j].pk).on( 'focusout', function(e) {
+						clearCanvas();
+					} );
+					$("#draw_glyph_"+dbData.lines[i].glyphs[j].pk).on( 'mouseover focusin', function(e) {
+						e.preventDefault();
+						clearCanvas();
+						i = $(this).data('i');
+						j = $(this).data('j');
+						vCMGlyphs[i] = iris($(this).data('n'));
+						sFillColor = "rgba(" + [].concat(vCMGlyphs[i][j], [0.6]).toString() + ")"
+						sStrokeColor = "rgba(" + [].concat(vCMGlyphs[i][j], [0.7]).toString() + ")"
+						
+						// ctx.fillPolygon(polygonPoints, sFillColor, sStrokeColor, 4);
+						ctx.fillPolygon($(this).data('polygon'), sFillColor, null, 4);
+					});
+					
+					// Data update events
+					
+					//Changes to text values
+					vInputs = [ "unicode_glyphs", "manuel_de_codage", "moller_number", "mainz_number"	];
+					for(var k=0; k<vInputs.length; k++) {
+						$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_"+vInputs[k]).data('pk', dbData.lines[i].glyphs[j].pk);
+						$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_"+vInputs[k]).data('field', vInputs[k]);
+						
+						$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_"+vInputs[k]).on( 'change', function(e) {
+							e.preventDefault();
+							var oUpdate = new Object();
+							oUpdate.pk = $(this).data('pk');
+							oUpdate.field  = $(this).data('field');
+							oUpdate.value = $(this).val();
+							
+							$.ajaxSetup({
+								beforeSend: function(xhr, settings) {
+									if (!(/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type)) && !this.crossDomain) {
+										xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
+									}
+								}
+							});
+							$.ajax({
+								url: $(this).closest("form").attr("update_glyph_url"),
+								type : "POST",
+								data: JSON.stringify(oUpdate),
+								dataType: 'json',
+								success: function(json) { console.log(json); },
+								error: function(xhr,errmsg,err) { console.log(xhr.status + ": " + xhr.responseText); }
+							});
+						});
+					}
+					
+					// Moving glyphs in sequence
+					//"glyph_{{glyph.pk}}_move_up"
+					$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_up").data('pk', dbData.lines[i].glyphs[j].pk);
+					$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_up").data('up', true);
+					$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_down").data('pk', dbData.lines[i].glyphs[j].pk);
+					$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_down").data('up', false);
+					
+					// MoveGlyph = function(e, o) {
+					// 	$.ajaxSetup({
+					// 		beforeSend: function(xhr, settings) {
+					// 			if (!(/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type)) && !this.crossDomain) {
+					// 				xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
+					// 			}
+					// 		}
+					// 	});
+					// 
+					// 	console.log($(o).data('pk'));
+					// 	console.log($(o).closest("form").attr("move_glyph_url"))
+					// 	var oUpdate = new Object();
+					// 	oUpdate.pk = $(o).data('pk');
+					// 	oUpdate.up = $(o).data('up');
+					// 
+					// 	$.ajax({
+					// 		url: $(o).closest("form").attr("move_glyph_url"),
+					// 		type : "POST",
+					// 		data: JSON.stringify(oUpdate),
+					// 		dataType: 'json'
+					// 		// success: function(json) { console.log(json); },
+					// 		// error: function(xhr,errmsg,err) { console.log(err); }//xhr.status + ": " + xhr.responseText); }
+					// 	});
+					// };
+					// 
+					// $("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_up").on( 'click', function(e) { MoveGlyph(e, this) });
+					// $("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_down").on( 'click', function(e) { MoveGlyph(e, this) });
+				}
+			}
+			
+  	});
+	
+		function clearCanvas() {
+	    var canvas = document.getElementById("canvas");
+	    ctx = canvas.getContext("2d");
+	    canvas.width = dbData.facsimile.width;
+	    canvas.height = dbData.facsimile.height;
+	    ctx.clearRect(0,0,canvas.width,canvas.height); 
+	    var background = new Image();
+	    background.src = dbData.facsimile.url;
+	    ctx.drawImage(background,0,0);
+	  }
+	
+	  //create and fill polygon
+	  CanvasRenderingContext2D.prototype.fillPolygon = function (pointsArray, fillColor, strokeColor, linewidth) {
+	    if (pointsArray.length <= 0) return;
+	    this.moveTo(pointsArray[0][0], pointsArray[0][1]);
+	    for (var i = 0; i < pointsArray.length; i++) {
+	        this.lineTo(pointsArray[i][0], pointsArray[i][1]);
+	    }
+	    if (strokeColor != null && strokeColor != undefined) {
+	      this.strokeStyle = strokeColor;
+	      this.lineWidth = linewidth;
+	      this.imageSmoothingEnabled = true;
+	      this.imageSmoothingQuality = 'high';
+	      this.lineCap = 'round';
+	      this.lineJoin = 'round';
+	      this.closePath();
+	      this.stroke();
+	    }
+
+	    if (fillColor != null && fillColor != undefined) {
+	      this.fillStyle = fillColor;
+	      this.fill();
+	    }
+	    return this;
+	  }
+
+
+	</script>
+{% endblock javascript %}

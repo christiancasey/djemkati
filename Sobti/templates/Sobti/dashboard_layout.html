@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Text Input Dashboard</title>
+		
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+		<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+	
+		
+		<style>
+			@font-face {
+				font-family: "Egyptian";
+				src: url("/static/fonts/egyptian.eot");
+				src: local("egyptian"), url("/static/fonts/egyptian.ttf") format("truetype");
+			}
+			@font-face {
+				font-family: "Garamond";
+				src: url("/static/fonts/GaramondPremrPro.otf");
+				src: local("GaramondPremrPro"), url("/static/fonts/GaramondPremrPro.ttf") format("truetype");
+			}
+			.egyptian {
+				font: normal 120% "Egyptian", "Aegyptus";
+			}
+			* {
+				font-family: "Garamond Premier Pro", "Adobe Garamond", Garamond !important;
+				margin: 0;
+				padding: 0;
+			}
+			body {
+				background-color: black;
+			}
+			.dashboard {
+				background-color: gray;
+				width: 100vw;
+				height: 100vh;
+			}
+			.header_wrapper {
+				background-color: lightblue;
+				width: 100vw;
+				height: auto;
+			}
+			.header {
+				background-color: gray;
+				margin: 0;
+				height: 10vh;
+				width: 100%;
+				line-height: 10vh;
+			}
+			
+			.workspace {
+				background-color: lightgreen;
+				width: 100vw;
+				height: 90vh;
+			}
+			
+			.text_viewer {
+				background-color: lightyellow;
+				width: 60%;
+				height: 100%;
+				float: left;
+			}
+			
+			.sign_list_container {
+				background-color: orange;
+				width: 40%;
+				height: 100%;
+				float: left;
+				overflow: scroll;
+			}
+				
+				
+		</style>
+	</head>
+	<body>
+		<!-- <h1><span>A quick brown fox</span></h1> -->
+		<div class="dashboard">
+			<div class="header_wrapper">
+				<div class="header">
+						<h1>HEADER TEXT</h1>
+				</div>
+			</div>
+			
+		
+			<div class="workspace">
+				<div class="text_viewer">
+					<canvas id="text_canvas"></canvas>
+				</div>
+				<div class="sign_list_container">
+					sign list
+				</div>
+			</div>
+		</div>
+		
+		
+		
+		
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

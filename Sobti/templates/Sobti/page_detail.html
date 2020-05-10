@@ -1,0 +1,272 @@
+{% extends 'Sobti/base.html' %}	
+
+{% load static %}
+
+{% block title %}Ⲥⲟⲃϯ: Glyph Labeling Workspace{% endblock %}
+
+
+{% block stylesheet %}<link rel="stylesheet" type="text/css" href="{% static 'css/sobti_style.css' %}">{% endblock %}
+
+{% block content %}
+
+	{% if page %}
+		<div class="dashboard">
+			<div class="header">
+				<h1>
+					<a href="{% url 'sobti:manuscripts' page.manuscript.text.id %}">{{ page.manuscript.text.title }}</a> – 
+					<a href="{% url 'sobti:pages' page.manuscript.text.id page.manuscript.id %}">{{ page.manuscript.collection.name }}: {{ page.manuscript.accession_number }}</a>, 
+					Page {{ page.number_in_manuscript }}
+				</h1>
+			</div>
+				
+			<div class="work_surface">
+					
+				<div class="text_wrapper">
+					<canvas id="canvas"></canvas>
+				</div>
+				
+				<div class="sign_list">
+					<form method="post" 
+						update_glyph_url="{% url 'sobti:modify_glyph_data' page.manuscript.text.pk page.manuscript.pk page.pk %}"
+						move_glyph_url="{% url 'sobti:move_glyph_position' page.manuscript.text.pk page.manuscript.pk page.pk %}">
+						{% csrf_token %}
+						
+						<div class="accordion" id="lineSet" style="max-height: 100%; width: 100%;">
+							
+							{% for line in page.line_set.all %}
+							<div class="card" style="width: 100%;">
+								<div id="draw_line_{{ line.pk }}">
+									<div class="card-header" id="line{{ line.number_in_page }}">
+										<h2 class="mb-0">
+											<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#glyphs{{ line.number_in_page }}" aria-expanded="true" aria-controls="glyphs{{ line.number_in_page }}" style="width:40vw;">
+												<h2 id="line_header_{{ line.number_in_page }}">Line {{ line.number_in_page }}</h2>
+											</button>
+										</h2>
+									</div>
+								</div>
+
+								<div id="glyphs{{ line.number_in_page }}" class="collapse show" aria-labelledby="line{{ line.number_in_page }}" data-parent="#lineSet">
+									<div class="card-body" style="margin: 0; padding: 0;">
+										
+										<ul class="list-group" style="margin: 0; padding: 0;">
+											
+											{% for glyph in line.glyph_set.all %}
+												
+												<li class="list-group-item">
+													<div id="draw_glyph_{{ glyph.pk }}">
+														<div class="input-group">
+															
+															<div class="input-group-prepend">
+																<div class="sign_move_buttons">
+																	<input id="glyph_{{glyph.pk}}_move_up" value="&#x2B06;" type="button" class="move_sign_up" />
+																	<input id="glyph_{{glyph.pk}}_move_down" value="&#x2B07;" type="button" class="move_sign_down" />
+																</div>
+																<div class="glyph_in_line">
+																	{{ glyph.number_in_line }}
+																</div>
+																	<div class="glyph_image_container">
+																		<img src="{{ glyph.image.url }}" />
+																	</div>
+															</div>
+														
+														
+															<!-- <input value="{{ glyph.number_in_line }}" placeholder="&#x2116;" type="text" aria-label="glyph_{{glyph.pk}}_number_in_line" class="number_input" maxlength="3" /> -->
+															<!-- <input value="{{ glyph.number_in_page }}" type="text" aria-label="glyph_{{glyph.pk}}_number_in_page" class="form-control"> -->
+															<input id="glyph_{{glyph.pk}}_unicode_glyphs" 	value="{{ glyph.unicode_glyphs }}" 		placeholder="&#x13000;&#x13050;&#x133E5;" maxlength="3" 	class="glyph_input" 	type="text" />
+															<input id="glyph_{{glyph.pk}}_manuel_de_codage" value="{{ glyph.manuel_de_codage }}" 	placeholder="A1*B1:Z2" 										maxlength="10" 	class="text_input" 		type="text" />
+															<input id="glyph_{{glyph.pk}}_moller_number" 		value="{{ glyph.moller_number }}" 		placeholder="&#x1D578;" 									maxlength="5" 	class="number_input" 	type="text" />
+															<input id="glyph_{{glyph.pk}}_mainz_number" 		value="{{ glyph.mainz_number }}" 			placeholder="PAK" 												maxlength="12" 	class="number_input" 	type="text" />
+															
+
+														</div>
+													</div>
+												</li>
+												
+											{% endfor %}
+										</ul>
+										
+									</div>
+								</div>
+							
+							</div>
+							{% endfor %}
+							
+							<div class="card" style="width: 100%; height: 65vh;">
+							</div>
+						
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+	
+{% endblock %}
+
+{% block javascript %}
+
+	<script type="text/javascript">
+		var dbData = JSON.parse( '{{ data_package|safe }}' );	
+		
+		var nLines = dbData.lines.length;
+	  var vCMLines = iris(nLines);
+		
+		////////////////////////////////////////////////////////////////////////////
+		// DOCUMENT LOAD 
+		////////////////////////////////////////////////////////////////////////////
+	  $( document ).ready( function(){
+	    
+	    vCMGlyphs = new Array(nLines).fill([]);
+			
+			// LINE LOOP
+			for(var i=0; i<nLines; i++) {
+				$("#line_header_"+dbData.lines[i].number_in_page).css('color', "rgb(" + vCMLines[i].toString() + ")");
+	      $("#line_header_"+dbData.lines[i].number_in_page).css('background-color', "rgb(" + vCMLines[i].map(function(f) {return f*0.25+193;}).toString() + ")")
+				
+				$("#draw_line_"+dbData.lines[i].pk).data('i', i);
+				$("#draw_line_"+dbData.lines[i].pk).on( 'mouseout', function(e) {
+	        clearCanvas();
+	      });				
+	      $("#draw_line_"+dbData.lines[i].pk).on( 'mouseover', function(e) {
+	        e.preventDefault();
+					clearCanvas();
+					i = $(this).data('i');
+					sFillColor = "rgba(" + [].concat(vCMLines[i], [0.8]).toString() + ")";
+					sStrokeColor = "rgba(" + [].concat(vCMLines[i], [0.7]).toString() + ")";
+					ctx.fillPolygon(dbData.lines[i].polygon, null, sStrokeColor, 6);
+				});
+				
+				var nGlyphs = dbData.lines[i].glyphs.length;
+				vCMGlyphs[i] = iris(nGlyphs);
+				
+				// GLYPH LOOP
+				for(var j=0; j<nGlyphs; j++) {
+					
+					// Rollover events for displaying polygons
+					$("#draw_glyph_"+dbData.lines[i].glyphs[j].pk).data('i', i);
+					$("#draw_glyph_"+dbData.lines[i].glyphs[j].pk).data('j', j);
+					$("#draw_glyph_"+dbData.lines[i].glyphs[j].pk).on( 'focusout', function(e) {
+						clearCanvas();
+					} );
+					$("#draw_glyph_"+dbData.lines[i].glyphs[j].pk).on( 'mouseover focusin', function(e) {
+						e.preventDefault();
+						clearCanvas();
+						i = $(this).data('i');
+						j = $(this).data('j');
+						sFillColor = "rgba(" + [].concat(vCMGlyphs[i][j], [0.6]).toString() + ")"
+						sStrokeColor = "rgba(" + [].concat(vCMGlyphs[i][j], [0.7]).toString() + ")"
+						// ctx.fillPolygon(polygonPoints, sFillColor, sStrokeColor, 4);
+						ctx.fillPolygon(dbData.lines[i].glyphs[j].polygon, sFillColor, null, 4);
+					});
+					
+					// Data update events
+					
+					//Changes to text values
+					vInputs = [ "unicode_glyphs", "manuel_de_codage", "moller_number", "mainz_number"	];
+					for(var k=0; k<vInputs.length; k++) {
+						$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_"+vInputs[k]).data('pk', dbData.lines[i].glyphs[j].pk);
+						$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_"+vInputs[k]).data('field', vInputs[k]);
+						
+						$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_"+vInputs[k]).on( 'change', function(e) {
+							e.preventDefault();
+							var oUpdate = new Object();
+							oUpdate.pk = $(this).data('pk');
+							oUpdate.field  = $(this).data('field');
+							oUpdate.value = $(this).val();
+							
+							$.ajaxSetup({
+								beforeSend: function(xhr, settings) {
+									if (!(/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type)) && !this.crossDomain) {
+										xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
+									}
+								}
+							});
+							$.ajax({
+								url: $(this).closest("form").attr("update_glyph_url"),
+								type : "POST",
+								data: JSON.stringify(oUpdate),
+								dataType: 'json',
+								success: function(json) { console.log(json); },
+								error: function(xhr,errmsg,err) { console.log(xhr.status + ": " + xhr.responseText); }
+							});
+						});
+					}
+					
+					// Moving glyphs in sequence
+					//"glyph_{{glyph.pk}}_move_up"
+					$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_up").data('pk', dbData.lines[i].glyphs[j].pk);
+					$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_up").data('up', true);
+					$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_down").data('pk', dbData.lines[i].glyphs[j].pk);
+					$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_down").data('up', false);
+					
+					MoveGlyph = function(e, o) {
+						$.ajaxSetup({
+							beforeSend: function(xhr, settings) {
+								if (!(/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type)) && !this.crossDomain) {
+									xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
+								}
+							}
+						});
+						
+						console.log($(o).data('pk'));
+						console.log($(o).closest("form").attr("move_glyph_url"))
+						var oUpdate = new Object();
+						oUpdate.pk = $(o).data('pk');
+						oUpdate.up = $(o).data('up');
+						
+						$.ajax({
+							url: $(o).closest("form").attr("move_glyph_url"),
+							type : "POST",
+							data: JSON.stringify(oUpdate),
+							dataType: 'json'
+							// success: function(json) { console.log(json); },
+							// error: function(xhr,errmsg,err) { console.log(err); }//xhr.status + ": " + xhr.responseText); }
+						});
+					};
+					
+					$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_up").on( 'click', function(e) { MoveGlyph(e, this) });
+					$("#glyph_"+dbData.lines[i].glyphs[j].pk+"_move_down").on( 'click', function(e) { MoveGlyph(e, this) });
+				}
+			}
+			
+  	});
+	
+		function clearCanvas() {
+	    var canvas = document.getElementById("canvas");
+	    ctx = canvas.getContext("2d");
+	    canvas.width = dbData.facsimile.width;
+	    canvas.height = dbData.facsimile.height;
+	    ctx.clearRect(0,0,canvas.width,canvas.height); 
+	    var background = new Image();
+	    background.src = dbData.facsimile.url;
+	    ctx.drawImage(background,0,0);
+	  }
+	
+	  //create and fill polygon
+	  CanvasRenderingContext2D.prototype.fillPolygon = function (pointsArray, fillColor, strokeColor, linewidth) {
+	    if (pointsArray.length <= 0) return;
+	    this.moveTo(pointsArray[0][0], pointsArray[0][1]);
+	    for (var i = 0; i < pointsArray.length; i++) {
+	        this.lineTo(pointsArray[i][0], pointsArray[i][1]);
+	    }
+	    if (strokeColor != null && strokeColor != undefined) {
+	      this.strokeStyle = strokeColor;
+	      this.lineWidth = linewidth;
+	      this.imageSmoothingEnabled = true;
+	      this.imageSmoothingQuality = 'high';
+	      this.lineCap = 'round';
+	      this.lineJoin = 'round';
+	      this.closePath();
+	      this.stroke();
+	    }
+
+	    if (fillColor != null && fillColor != undefined) {
+	      this.fillStyle = fillColor;
+	      this.fill();
+	    }
+	    return this;
+	  }
+
+
+	</script>
+{% endblock %}

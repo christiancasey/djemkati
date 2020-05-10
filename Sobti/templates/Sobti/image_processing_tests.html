@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+{% load static %}
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Page Detail</title>
+		
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+		<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+		
+<!-- <script src="https://www.marvinj.org/releases/marvinj-0.9.js"></script> -->
+		
+		
+		<script src="/static/marvinj-1.0.js"></script>
+		<script type="text/javascript">
+			
+			
+
+
+			function iris(m) {
+				fPurple = 2*Math.PI/3.0;
+				fScale = 0.8;
+				fOffset = 0.0;
+				vCM = new Array(m).fill(Array(3).fill(0));
+				
+				for(i=0;i<m;i++) {
+					fTh = (i/m) * (Math.PI*2 - fPurple)
+					vCM[i] = [ 255*(fScale*(Math.cos(fTh)+1)/2+fOffset), 255*(fScale*(Math.cos(fTh-2*Math.PI/3)+1)/2+fOffset), 255*(fScale*(Math.cos(fTh-4*Math.PI/3)+1)/2+fOffset) ];
+				}
+				return vCM;
+			}
+						
+			var sFilename = "{{glyph.image.url}}";
+			
+			var canvasA = document.getElementById("canvasA");
+			var canvasB = document.getElementById("canvasB");
+			var canvasC = document.getElementById("canvasC");
+			var canvasD = document.getElementById("canvasD");
+			var original = new MarvinImage();
+			
+			$( document ).ready(function(){
+				
+				canvasA = document.getElementById("canvasA");
+				canvasB = document.getElementById("canvasB");
+				canvasC = document.getElementById("canvasC");
+				canvasD = document.getElementById("canvasD");
+
+				original.load(sFilename, function(){
+					
+					image = original.clone();
+					Marvin.scale(original, image, 100);
+					original = image;
+					
+					canvasA.width = original.getWidth();
+					canvasA.height = original.getHeight();
+					canvasB.width = original.getWidth();
+					canvasB.height = original.getHeight();
+					canvasC.width = original.getWidth();
+					canvasC.height = original.getHeight();
+					canvasD.width = original.getWidth();
+					canvasD.height = original.getHeight();
+
+					 // Draw the original image 
+					original.draw(canvasA);
+					
+					// create a new image with the same dimension
+					var image = new MarvinImage(original.getWidth(), original.getHeight());
+					grayscale(original, image);
+					image.draw(canvasB);
+					
+					image = original.clone();
+					// thresholding(original, image, 100);
+					BinarizeFromSelection(original, image);
+					image.draw(canvasC);
+					
+					image = original.clone();
+					edgeDetection(original, image, 100);
+					image.draw(canvasD);
+				});
+				
+				$("#threshold").change( function(e) {
+					adjustThreshold(this.value);
+				} );
+
+			} );
+
+			function grayscale(imageIn, imageOut){
+				
+				const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
+				
+				imageA = imageIn.getChannel(3);
+				fMeanA = arrAvg(imageA);
+				
+				for(var y=0; y<imageIn.getHeight(); y++){
+					for(var x=0; x<imageIn.getWidth(); x++){
+						var red		= imageIn.getIntComponent0(x,y);
+						var green	= imageIn.getIntComponent1(x,y);
+						var blue	= imageIn.getIntComponent2(x,y);
+						var gray = Math.floor(red*0.21+green*0.71+blue*0.08);
+						if( imageA[((y*imageIn.getWidth())+x)] <= fMeanA )
+							gray = 255;
+						
+						
+						imageOut.setIntColor(x, y, gray, gray, gray);
+					}
+				} 
+			}
+			
+			function edgeDetection(imageIn, imageOut, threshold){
+				image = imageIn.clone();
+				// image.clear(0xFF000000);
+				Marvin.prewitt(image, imageOut);
+					grayscale(imageOut, imageOut);
+				Marvin.invertColors(imageOut, imageOut);
+				Marvin.thresholding(imageOut, imageOut, threshold);
+			}
+			
+			function thresholding(imageIn, imageOut, threshold){
+				// Convert image to gray scale before thresholding
+				grayscale(imageIn, imageOut);
+				for(var y=0; y<imageOut.getHeight(); y++){
+					for(var x=0; x<imageOut.getWidth(); x++){
+						var gray = imageOut.getIntComponent0(x,y);
+
+						if(gray < threshold){
+							imageOut.setIntColor(x,y, 0xFF000000);
+						} else{
+							imageOut.setIntColor(x,y, 0xFFFFFFFF);
+						}
+					}
+				}
+			}
+			
+			function adjustThreshold(iNew) {
+				var image = new MarvinImage(original.getWidth(), original.getHeight());
+				image = original.clone();
+				grayscale(original, image);
+				// image.draw(canvasB);
+				
+				image = original.clone();
+				thresholding(original, image, iNew);
+				image.draw(canvasC);
+				
+				image = original.clone();
+				edgeDetection(original, image, iNew);
+				image.draw(canvasD);
+			}
+			
+		</script>
+		
+		<style>
+		#canvasA {
+			background-color: red;
+			/* width: 20vw; */
+		}
+		#canvasB {
+			background-color: green;
+			/* width: 20vw; */
+		}
+		#canvasC {
+			background-color: blue;
+			/* width: 20vw; */
+		}
+		#canvasD {
+			background-color: black;
+			/* width: 20vw; */
+		}
+		#colorPair {
+			width: 100px;
+			height: 100px;
+		}
+		#colorFore {
+			background-color: black;
+			width: 50px;
+			height: 50px;
+			margin: 25px;
+			/* border: 5px solid red; */
+			/* float: left; */
+		}
+		#colorBack {
+			background-color: gray;
+			margin: 0;
+			padding: 0;
+			width: 100px;
+			height: 100px;
+			/* border: 5px hidden red; */
+			float: left;
+		}
+		#colorSpacer {
+			background-color: gray;
+			width: 100%;
+			height: 25%;
+			float: left;
+		}
+		</style>
+	</head>
+	<body>
+				
+		<div>
+		<canvas id="canvasA" width="400" height="400"></canvas>
+		<canvas id="canvasB" width="400" height="400" style="display:inline-block"></canvas>
+		<canvas id="canvasC" width="400" height="400" style="display:inline-block"></canvas>
+		<canvas id="canvasD" width="400" height="400" style="display:inline-block"></canvas>
+		<br>
+		
+		<div id="colorPair">
+			<!-- <div id="colorBack"> -->
+				<div id="colorBack">
+				<div id="colorFore"></div></div>
+			<!-- </div>	 -->
+		</div>
+		
+		
+		</div>
+		
+		<div class="slidecontainer">
+			<input type="range" min="0" max="1000" value="500" class="slider" id="slider_control">
+			<p>Value: <span id="slider_display"></span></p>
+		</div>
+		
+		Threshold: <input type="text" id="threshold" value="0"></input>
+		{{glyph.image.url}}
+		
+		<div id="status"></div>
+		
+		
+		
+		
+		
+		<script>
+			function logistic(x) {
+				// return 1 / (1 + Math.exp(-x));
+				return Math.log(x) - Math.log(1-x);
+			}
+				
+			var slider = document.getElementById("slider_control");
+			var display = document.getElementById("slider_display");
+			var fThresholdRatio = slider.value/1000;
+			display.innerHTML = fThresholdRatio;
+			
+			
+			slider.oninput = function() {
+				fThresholdRatio = this.value/1000;
+				display.innerHTML = fThresholdRatio;
+				BinarizeFromSelection(original, image);
+				image.draw(canvasC);
+				// adjustThreshold(this.value);
+			}
+		</script>
+		
+		
+		<script>
+			function findPos(obj) {
+			var curleft = 0, curtop = 0;
+			if (obj.offsetParent) {
+			    do {
+			        curleft += obj.offsetLeft;
+			        curtop += obj.offsetTop;
+			    } while (obj = obj.offsetParent);
+			    return { x: curleft, y: curtop };
+			}
+			return undefined;
+			}
+
+			function rgbToHex(r, g, b) {
+			if (r > 255 || g > 255 || b > 255)
+			    throw "Invalid color component";
+			return ((r << 16) | (g << 8) | b).toString(16);
+			}
+
+			var bForeBack = 0;
+			var vSelectedColor;
+			var vForeBackColor = new Array(2).fill(0);
+			
+			// set up some squares
+			var example = document.getElementById('canvasA');
+			var context = example.getContext('2d');
+			// context.fillStyle = "rgb(255,0,0)";
+			// context.fillRect(0, 0, 50, 50);
+			// context.fillStyle = "rgb(0,0,255)";
+			// context.fillRect(55, 0, 50, 50);
+
+			$('#canvasA').mousemove( function(e) {
+				var pos = findPos(this);
+				var x = e.pageX - pos.x;
+				var y = e.pageY - pos.y;
+				var coord = "x=" + x + ", y=" + y;
+				var c = this.getContext('2d');
+				var p = c.getImageData(x, y, 1, 1).data; 
+				var hex = "#" + ("000000" + rgbToHex(p[0], p[1], p[2])).slice(-6);
+				vSelectedColor = p;
+				$('#status').html(hex);
+			});
+			$('#canvasA').click( function(e) {
+				vForeBackColor[bForeBack] = vSelectedColor;
+				bForeBack = 1-bForeBack;
+				console.log(vForeBackColor[0]);
+				
+				$('#colorBack').css('background-color', "#" + ("000000" + rgbToHex(vForeBackColor[0][0], vForeBackColor[0][1], vForeBackColor[0][2])).slice(-6));
+				$('#colorFore').css('background-color', "#" + ("000000" + rgbToHex(vForeBackColor[1][0], vForeBackColor[1][1], vForeBackColor[1][2])).slice(-6));
+				
+				image = original.clone();
+				// thresholding(original, image, 100);
+				BinarizeFromSelection(original, image);
+				image.draw(canvasC);
+			});
+			
+			function sq_diff(a, b) {
+				var x = a.map(function(item, index) {
+					return Math.pow(item - b[index],2);
+				});
+				const sum = arr => arr.reduce((a,b) => a + b, 0)
+				return sum(x);
+			}
+			
+			function BinarizeFromSelection(imageIn, imageOut) {
+				for(var y=0; y<imageIn.getHeight(); y++) {
+					for(var x=0; x<imageIn.getWidth(); x++) {
+						
+						var vPixel = Array(3).fill(0);
+						for(var c=0; c<3; c++)
+							vPixel[c] = imageIn.getIntComponentC(x,y,c);
+							
+						var dBack = sq_diff(vPixel, vForeBackColor[0])*(1-fThresholdRatio);
+						var dFore = sq_diff(vPixel, vForeBackColor[1])*fThresholdRatio;
+						i = ((dBack<dFore)+(1-imageIn.getIntComponentC(x,y,3)/255)>0)*255;
+						imageOut.setIntColor3(x,y,i,i,i);
+					}
+				}
+			}
+					
+		</script>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</body>
+</html>

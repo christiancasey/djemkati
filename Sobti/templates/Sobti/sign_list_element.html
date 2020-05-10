@@ -1,0 +1,233 @@
+{% extends 'Sobti/page_workspace.html' %}	
+
+{% load static %}
+
+
+{% block style_sign_list %}<link rel="stylesheet" type="text/css" href="{% static 'css/sign_list_style.css' %}">{% endblock style_sign_list %}
+
+
+{% block sign_list %}
+	<div class="sign_list">
+		
+		<form method="post" 
+			update_glyph_url="{% url 'sobti:modify_glyph_data' page.manuscript.text.pk page.manuscript.pk page.pk %}"
+			move_glyph_url="{% url 'sobti:move_glyph_position' page.manuscript.text.pk page.manuscript.pk page.pk %}">
+			{% csrf_token %}
+			
+			<div class="accordion" id="lineSet">
+				
+				{% for line in page.line_set.all %}
+					<div class="card">
+						<div id="draw_line_{{ line.pk }}" class="draw_line" >
+							<div class="card-header" id="line{{ line.number_in_page }}">
+								<h2 class="mb-0">
+									<button id="line_glyph_collapse_{{ line.number_in_page }}" class="btn btn-link" type="button" data-toggle="collapse" data-target="#glyphs{{ line.number_in_page }}" aria-expanded="false" aria-controls="glyphs{{ line.number_in_page }}">
+										<h2 id="line_header_{{ line.pk }}">Line {{ line.number_in_page }}</h2>
+									</button>
+								</h2>
+							</div>
+						</div>
+						
+						<div id="glyphs{{ line.number_in_page }}" class="show" aria-labelledby="line{{ line.number_in_page }}" data-parent="#lineSet">
+							<div class="card-body">
+								
+								<ol class="serialization vertical" data-pk="{{ line.pk }}" data-pos="{{ line.number_in_page }}">
+									
+									{% for glyph in line.glyph_set.all %}
+										
+										<li class="serialization list-group-item" data-pk="{{ glyph.pk }}" data-pos_rel="{{ glyph.number_in_line }}" data-pos_abs="{{ glyph.number_in_page }}" data-line_pk="{{ line.pk }}">
+											
+											<div id="draw_glyph_{{ glyph.pk }}">
+												
+												<div class="input-group">
+													
+													<div class="input-group-prepend">
+														<div class="icon-move" id="glyph_mover_{{ glyph.pk}}">
+															<h1>&#x13406;</h1><!-- &#x13343;&#x132F8;&#x13344; &#x1331D; &#x13284;1329B𓊛 1329C𓊜 𓂻𓈝-->
+														</div>
+															<div class="glyph_in_line" id="gil_{{ glyph.pk }}">
+																{{ glyph.number_in_line }}
+															</div>
+															<div class="glyph_image_container">
+																<div id="glyph_image_btn_{{ glyph.pk }}" data-pk="{{ glyph.pk }}" class="glyph_image_btn">
+																	<img src="{{ glyph.image.url }}" />
+																</div>
+															</div>
+														<!-- </div> -->
+													</div>
+													
+													<input id="glyph_{{glyph.pk}}_unicode_glyphs" 	value="{{ glyph.unicode_glyphs }}" 		placeholder="&#x13000;&#x13050;&#x133EB;" maxlength="3" 	class="glyph_input" 	type="text" />
+													<input id="glyph_{{glyph.pk}}_manuel_de_codage" value="{{ glyph.manuel_de_codage }}" 	placeholder="A1*B1:Z2" 										maxlength="10" 	class="text_input" 		type="text" />
+													<input id="glyph_{{glyph.pk}}_moller_number" 		value="{{ glyph.moller_number }}" 		placeholder="&#x1D578;" 									maxlength="5" 	class="number_input" 	type="text" />
+													<input id="glyph_{{glyph.pk}}_mainz_number" 		value="{{ glyph.mainz_number }}" 			placeholder="PAK" 												maxlength="12" 	class="number_input" 	type="text" />
+													
+
+												</div>
+											</div>
+										</li>
+										
+									{% endfor %}
+								</ol>
+								
+							</div>
+						</div>
+					
+					</div>
+				{% endfor %}
+				
+				<div class="card" style="width: 100%; height: 65vh;">
+				</div>
+			
+			</div>
+		</form>
+	</div>
+{% endblock sign_list %}
+
+
+<script type="text/javascript">
+	{% block sign_list_js %}
+		
+	
+		async function UpdateGlyphPositions() {
+			var vNewGlyphPositions = [];
+			var vNewGlyphLines = [];
+			var iAbsPos = 0;
+			
+			// Go through the new arrangement and determined which things have moved
+			$('ol.serialization').each( function(i,l) { 
+				var iLinePk = Number($(l).data('pk'));
+				
+				var n = $(l).children('li.serialization').length;
+				$(l).children('li.serialization').each( function(j,g) { 
+					iGlyphPk = Number($(g).data('pk'));
+					iAbsPos++;
+					// console.log([i+1,j+1,$(g).data('pos_rel'),iAbsPos+1,$(g).data('pos_abs')]);
+					
+					// Update the information in the display as well
+					$('#gil_'+iGlyphPk).text(j+1);
+					$("#draw_glyph_"+iGlyphPk).data('i',i+1);
+					$("#draw_glyph_"+iGlyphPk).data('j',j+1);
+					$("#draw_glyph_"+iGlyphPk).data('n',n+1);
+					
+					// Make a list of glyphs that need to have their position values changed
+					if( (Number($(g).data('pos_rel')) != (j+1)) 
+							|| (Number($(g).data('pos_abs')) != (iAbsPos+1)) ) {
+						var o = new Object();
+						o.glyph_pk = iGlyphPk;
+						o.new_pos_rel = j+1;
+						o.new_pos_abs = iAbsPos+1;
+						vNewGlyphPositions = vNewGlyphPositions.concat(o);
+						
+						
+					}
+					// Make a list of glyphs that moved to a different line
+					if( Number($(g).data('line_pk')) != iLinePk ) {
+						var o = new Object();
+						o.glyph_pk = iGlyphPk;
+						o.new_line_pk = iLinePk;
+						o.new_line_pos = i+1;
+						vNewGlyphLines = vNewGlyphLines.concat(o);
+					}
+				})
+				
+			});
+			
+			var oUpdate = new Object();
+			oUpdate.new_glyph_positions = vNewGlyphPositions;
+			oUpdate.new_glyph_lines = vNewGlyphLines;
+			
+			dRes = await AjaxUpdate( $('ol.serialization').first().closest('form').attr("move_glyph_url"), oUpdate)
+			
+			// If the update is successful, update the display
+			if(dRes.success) {
+				$('ol.serialization').each( function(i,l) { 
+					var iLinePk = Number($(l).data('pk'));
+					
+					var nGlyphs = $(l).children('li.serialization').length;
+					vCMGlyphs[i] = iris(nGlyphs);
+					$(l).children('li.serialization').each( function(j,g) { 
+						iGlyphPk = Number($(g).data('pk'));
+						iAbsPos++;
+						// $("#glyph_mover_"+iGlyphPk).css('color', "rgb(" + vCMGlyphs[i][j].map(function(f) {return f*0.25+193;}).toString() + ")");
+						$("#glyph_mover_"+iGlyphPk).css('background-color', "rgb(" + vCMGlyphs[i][j].toString() + ")");
+						
+						$('#gil_'+iGlyphPk).text(j+1);
+						$("#draw_glyph_"+iGlyphPk).data('i',i+1);
+						$("#draw_glyph_"+iGlyphPk).data('j',j+1);
+						$("#draw_glyph_"+iGlyphPk).data('n',nGlyphs+1);
+					});
+				});
+			}
+			else alert('Database update failed.');
+			
+		}
+		
+		function AjaxUpdate(sUrl, oData) {
+			$.ajaxSetup({
+				beforeSend: function(xhr, settings) {
+					if (!(/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type)) && !this.crossDomain) {
+						xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
+					}
+				}
+			});
+			return $.ajax({
+				url: sUrl,
+				type : "POST",
+				data: JSON.stringify(oData),
+				dataType: 'json',
+				success: function(json) { console.log(json); },
+				error: function(xhr,errmsg,err) { console.log(xhr.status + ": " + xhr.responseText); }
+			});
+		}
+		
+		var adjustment;
+
+		var group = $("ol.serialization").sortable({
+			group: 'serialization',
+			// pullPlaceholder: false,
+			// animation on drop
+			onDrop: function  ($item, container, _super) {
+				var $clonedItem = $('<li/>').css({height: 0});
+				$item.before($clonedItem);
+				$clonedItem.animate({'height': $item.height()});
+				
+				$item.animate($clonedItem.position(), function () {
+					$clonedItem.detach();
+					_super($item, container);
+				});
+				
+				UpdateGlyphPositions();
+				
+			},
+			
+			// set $item relative to cursor position
+			onDragStart: function ($item, container, _super) {
+				var offset = $item.offset(),
+				  pointer = container.rootGroup.pointer;
+
+				adjustment = {
+					left: pointer.left - offset.left,
+					top: pointer.top - offset.top
+				};
+
+				_super($item, container);
+			},
+			onDrag: function ($item, position) {
+				$item.css({
+					left: position.left - adjustment.left,
+					top: position.top - adjustment.top
+				});
+			}
+		});
+		
+		// $('li.serialization').on( 'change', function(e) { console.log( $(this).data('pk') ) } );
+		// $('ol.serialization').each( function(i,o) { console.log( $(o).data('pk') ); $(o).children('li.serialization').each( function(i,o) { console.log( $(o).data('pk') ); } ) })
+		
+		// $('.glyph_image_btn').on( 'dblclick', function(e) { console.log($(this).data('pk')) } );
+		
+	{% endblock sign_list_js %}
+
+</script>
+
+
+

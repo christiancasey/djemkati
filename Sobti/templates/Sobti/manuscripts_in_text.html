@@ -1,0 +1,45 @@
+{% extends 'Sobti/base.html' %}	
+
+{% block title %}Manuscripts in {{ text.title }}{% endblock %}
+
+{% block content %}
+
+	<h1>Manuscripts in {{ text.title }}</h1>
+
+	{% if text %}
+		<ul class="list-group list-group-flush">
+			{% for manuscript in text.manuscript_set.all %}
+				<li class="list-group-item">
+					<a href="{% url 'sobti:pages' text.id manuscript.id %}">
+						{{ manuscript.text.title }} – {{ manuscript.collection.name }}: {{ manuscript.accession_number }}
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p>No manuscripts have been added for {{ text.title }}.</p>
+	{% endif %}
+	
+	
+	<!-- <h2>{{ template_filename }}</h2> -->
+		
+{% endblock %}
+
+{% block footer %}
+	<h3><a href="{% url 'sobti:texts' %}">Back to Text List</a></h3>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+	
+	////////////////////////////////////////////////////////////////////////////
+	// DOCUMENT LOAD 
+	////////////////////////////////////////////////////////////////////////////
+	$( document ).ready( function(){
+		// $("#add_text").on( 'click', function(e) {
+		// 
+		// });
+	});
+		
+{% endblock %}
+
