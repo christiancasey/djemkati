@@ -4,51 +4,7 @@
   padding: 0  !Important;
 }			
 
-.dashboard {
-  width: 100vw;
-  height: 100vh;
-}
-
-.header {
-  /* flex: 0 1 auto; */
-  height: 60px;
-  padding: 6px 0 !important;
-  line-height: 60px !important;
-}
-
-.work_surface {
-  flex: 1 1 auto;
-  height: 40vw;
-  width: 100vw;
-}
-
-.text_wrapper {
-  height: 100%;
-  width: 60vw;
-  float: left;
-}
-
-.sign_list {
-  background: #ffffdd;
-  /* float: left; */
-  max-width: 40%;
-  /* height: 80vh; */
-  height: 90vh !important;
-  /* max-height: 90vh; */
-  max-height: 90vh !important;
-  flex: 0 1 auto;
-  overflow: scroll;
-}
-
-canvas {
-  max-width: 100%;
-  max-height: auto;
-}
-
-
 .back_home_footer {
-  /* width: 100vw !important;
-  height: 100px !important; */
   position: fixed !important;
   left: 0 !important;
   bottom: 0 !important;
@@ -57,8 +13,6 @@ canvas {
    color: white !important;
    text-align: center !important;
 }
-
-
 
 
 

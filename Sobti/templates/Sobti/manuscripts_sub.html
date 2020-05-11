@@ -1,0 +1,17 @@
+{% block content %}
+
+	<ul class="list-group list-group-flush">
+		{% for manuscript in text.manuscript_set.all %}
+			<li class="list-group-item">
+				<a href="{% url 'sobti:pages' text.id manuscript.id %}">
+					𓏛 {{ manuscript.text.title }} – {{ manuscript.collection.name }}: {{ manuscript.accession_number }}
+				</a>
+			</li>
+		{% empty %}
+			<li class="list-group-item">
+				No manuscripts have been added for {{ text.title }}.
+			</li>
+		{% endfor %}
+	</ul>
+		
+{% endblock %}

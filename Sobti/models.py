@@ -14,18 +14,24 @@ class Text(models.Model):
 	
 	title = models.CharField("Name of composition", max_length=200)
 	era_composed = models.CharField("Approximate date of the text's original composition", max_length=200, blank=True)
- 
+
+class ManuscriptManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by('accession_number')
+		
 class Manuscript(models.Model):
 	def __str__(self):
 		return self.text.title + ' – ' + self.collection.name + ': ' + self.accession_number
 	
 	text = models.ForeignKey(Text, on_delete=models.CASCADE)
-	collection = models.ForeignKey(Collection, on_delete=models.CASCADE, blank=True)
-	accession_number = models.CharField("Acquisition number in collection if available", max_length=200, blank=True)
+	collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+	accession_number = models.CharField("Acquisition number", max_length=200, blank=True)
 	find_date = models.CharField("Date found in modern era", max_length=300, blank=True)
 	provenance = models.CharField("Geographic location of origin", max_length=200, blank=True)
 	date_added = models.DateTimeField("Date added to the database", blank=True, default=timezone.now)
 	marked_for_deletion = models.BooleanField("Removing a text triggers more operations", default=False)
+
+	objects = ManuscriptManager()
 
 class PageManager(models.Manager):
     def get_queryset(self):
@@ -39,11 +45,11 @@ class Page(models.Model):
 		+ (', p. %i' % self.number_in_manuscript )
 	
 	manuscript = models.ForeignKey(Manuscript, on_delete=models.CASCADE)
-	image = models.FileField(upload_to='upload/%Y-%m-%d', blank=True)
+	number_in_manuscript = models.IntegerField('Page number in manuscript')
+	image = models.FileField(upload_to='upload/%Y-%m-%d', blank=False)
 	image_preview = models.ImageField(blank=True)
 	image_thumbnail = models.ImageField(blank=True)
 	horizont = models.BooleanField("Text is horizontal (not vertical)", default=True)
-	number_in_manuscript = models.IntegerField("Sequence of page in manuscript")
 	
 	objects = PageManager()
 

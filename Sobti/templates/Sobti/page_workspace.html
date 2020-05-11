@@ -17,6 +17,7 @@
 		<div class="dashboard">
 			<div class="header">
 				<h1>
+					<a href="{% url 'sobti:texts' %}">&#x13250;</a>
 					<a href="{% url 'sobti:manuscripts' page.manuscript.text.id %}">{{ page.manuscript.text.title }}</a> – 
 					<a href="{% url 'sobti:pages' page.manuscript.text.id page.manuscript.id %}">{{ page.manuscript.collection.name }}: {{ page.manuscript.accession_number }}</a>, 
 					Page {{ page.number_in_manuscript }}
@@ -26,7 +27,7 @@
 			<div class="work_surface">
 					
 				<div class="text_wrapper">
-					<canvas id="canvas"></canvas>
+					<canvas id="facsimile"></canvas>
 				</div>
 				
 				{% block sign_list %}{% endblock sign_list %}
@@ -42,10 +43,17 @@
 	<script src="{% static 'js/jquery-sortable.js' %}"></script>
 	
 	<script type="text/javascript">
+		
+		// Generate dataset for all subsequent operations
 		var dbData = JSON.parse( '{{ data_package|safe }}' );	
 		var nLines = dbData.lines.length;
 	  var vCMLines = iris(nLines);
 		vCMGlyphs = new Array(nLines).fill([]);
+		
+		// Load facsimile image and make canvas background
+		var imgFacsimile = new Image();
+		imgFacsimile.onload = function(){ document.getElementById("facsimile").getContext("2d").drawImage(imgFacsimile,0,0); };
+		imgFacsimile.src = dbData.facsimile.url;
 		
 		////////////////////////////////////////////////////////////////////////////
 		// DOCUMENT LOAD 
@@ -83,10 +91,9 @@
 	        e.preventDefault();
 					clearCanvas();
 					i = $(this).data('i');
-					sFillColor = "rgba(" + [].concat(vCMLines[i], [0.8]).toString() + ")";
+					sFillColor = "rgba(" + [].concat(vCMLines[i], [0.1]).toString() + ")";
 					sStrokeColor = "rgba(" + [].concat(vCMLines[i], [0.7]).toString() + ")";
-					console.log(sFillColor)
-					ctx.fillPolygon($(this).data('polygon'), null, sStrokeColor, 6);
+					ctx.fillPolygon($(this).data('polygon'), sFillColor, sStrokeColor, 6);
 				});
 				
 				// GLYPH LOOP
@@ -108,10 +115,8 @@
 						i = $(this).data('i');
 						j = $(this).data('j');
 						vCMGlyphs[i] = iris($(this).data('n'));
-						sFillColor = "rgba(" + [].concat(vCMGlyphs[i][j], [0.6]).toString() + ")"
-						sStrokeColor = "rgba(" + [].concat(vCMGlyphs[i][j], [0.7]).toString() + ")"
-						
-						// ctx.fillPolygon(polygonPoints, sFillColor, sStrokeColor, 4);
+						sFillColor = "rgba(" + [].concat(vCMGlyphs[i][j], [0.6]).toString() + ")";
+						sStrokeColor = "rgba(" + [].concat(vCMGlyphs[i][j], [0.7]).toString() + ")";
 						ctx.fillPolygon($(this).data('polygon'), sFillColor, null, 4);
 					});
 					
@@ -130,13 +135,6 @@
 							oUpdate.field  = $(this).data('field');
 							oUpdate.value = $(this).val();
 							
-							$.ajaxSetup({
-								beforeSend: function(xhr, settings) {
-									if (!(/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type)) && !this.crossDomain) {
-										xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
-									}
-								}
-							});
 							$.ajax({
 								url: $(this).closest("form").attr("update_glyph_url"),
 								type : "POST",
@@ -188,14 +186,12 @@
   	});
 	
 		function clearCanvas() {
-	    var canvas = document.getElementById("canvas");
+	    var canvas = document.getElementById("facsimile");
 	    ctx = canvas.getContext("2d");
 	    canvas.width = dbData.facsimile.width;
 	    canvas.height = dbData.facsimile.height;
 	    ctx.clearRect(0,0,canvas.width,canvas.height); 
-	    var background = new Image();
-	    background.src = dbData.facsimile.url;
-	    ctx.drawImage(background,0,0);
+			ctx.drawImage(imgFacsimile,0,0);
 	  }
 	
 	  //create and fill polygon

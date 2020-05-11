@@ -1,0 +1,90 @@
+{% extends 'Sobti/base.html' %}	
+
+{% block title %}Pages in Manuscript: {{ manuscript.text.title }} – {{ manuscript.accession_number }}{% endblock %}
+
+{% block stylesheet %}
+
+{% endblock stylesheet %}
+
+{% block content %}
+
+	<h1>Pages in Manuscript: {{ manuscript.text.title }} – {{ manuscript.accession_number }}</h1>
+
+
+	{% if manuscript %}
+		<ul class="list-group list-group-flush">
+			{% for page in manuscript.page_set.all %}
+				<li class="list-group-item">
+					<a href="{% url 'sobti:page_detail' manuscript.text.id manuscript.id page.id %}">
+						{% if page.image_thumbnail %}
+							<img src="{{ page.image_thumbnail.url }}" class="img-thumbnail" />
+						{% else %}
+							{% comment %}
+							<a href="{% url 'sobti:page_process' manuscript.text.id manuscript.id page.id %}"> [[Process Page]]</a>
+							{% endcomment %}
+						{% endif %}
+						{{ manuscript.text.title }} – {{ manuscript.collection.name }}: {{ manuscript.accession_number }}, Page {{ page.number_in_manuscript }}
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p>No pages have been added for {{ manuscript.text.title }} – {{ manuscript.accession_number }}.</p>
+	{% endif %}
+	
+	<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#add_text" aria-expanded="false" aria-controls="collapseAddText">
+		Add a page...
+	</button>
+	<div class="collapse" id="add_text">
+		<div class="card card-body">
+			<form action="{% url 'sobti:pages' manuscript.text.id manuscript.id %}" method="post" enctype="multipart/form-data">
+				{% csrf_token %}
+				{{ form.non_field_errors }}
+				<div class="row">
+					<div class="col-9">
+						{% for field in form %}
+		  				<div class="row">
+								{{ field.errors }}
+								<div class="col-6">
+									<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+								</div>
+								<div class="col-6">
+									{{ field }}
+								</div>
+								{% if field.help_text %}
+									<div class="col">
+										<p class="help">{{ field.help_text|safe }}</p>
+									</div>
+								{% endif %}
+							</div>
+						{% endfor %}
+					</div>
+					<div class="col-2">
+						<input type="submit" value="Submit" class="btn btn-primary btn-lg" />
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	
+	
+		
+{% endblock %}
+
+{% block footer %}
+	<h3><a href="{% url 'sobti:texts' %}">Back to Text List</a></h3>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+	
+	////////////////////////////////////////////////////////////////////////////
+	// DOCUMENT LOAD 
+	////////////////////////////////////////////////////////////////////////////
+	$( document ).ready( function(){
+		// $("#add_text").on( 'click', function(e) {
+		// 
+		// });
+	});
+		
+{% endblock %}

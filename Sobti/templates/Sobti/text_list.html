@@ -1,59 +1,79 @@
 {% extends 'Sobti/base.html' %}	
 
-{% block title %}Texts in Ⲥⲟⲃϯ{% endblock %}
+{% block title %}Texts in Ⲥⲟⲃϯ{% endblock title %}
+
+{% block stylesheet %}
+<style type="text/css">
+	.text_title {
+		width: 100%;
+	}
+	#manuscript_list {
+		height: 100px;
+	}
+</style>
+{% endblock stylesheet %}
 
 {% block content %}
 
 	<h1>Texts in Ⲥⲟⲃϯ</h1>
 
 	{% if text_list %}
-		<ul class="list-group list-group-flush">
+		<ul class="list-group" id="text_list">
 			{% for text in text_list %}
 				<li class="list-group-item">
-					<a href="{% url 'sobti:manuscripts' text.id %}">{{ text.title }}</a>
+					<a href="{% url 'sobti:manuscripts' text.id %}">
+						{{ text.title }}
+						<i>({{ text.era_composed }})</i>
+					</a>
+					<!-- <div class="card-group">
+						  <button class="btn btn-primary text_title" type="button" data-toggle="collapse" data-target="#collapse_{{ text.pk }}" aria-expanded="false" aria-controls="collapseTest">
+						    {{ text.title }}
+						  </button>
+					</div>
+					<div class="collapse" id="collapse_{{ text.pk }}" data-pk="{{ text.pk }}" data-url="{% url 'sobti:manuscripts' text.id %}">
+					  <div class="card card-body" id="manuscript_list">
+							loading...
+						</div>
+					</div> -->
 				</li>
 			{% endfor %}
 		</ul>
+	
 	{% else %}
 		<p>No texts avabilable.</p>
 	{% endif %}
 	
-	<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#add_text" aria-expanded="false" aria-controls="collapseExample">
-		Add a new text...
+	<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#add_text" aria-expanded="false" aria-controls="collapseAddText">
+		Create a new text...
 	</button>
-
 	<div class="collapse" id="add_text">
 		<div class="card card-body">
-			
 			<form action="{% url 'sobti:texts' %}" method="post">
 				{% csrf_token %}
 				{{ form.non_field_errors }}
-				<div class="container">
-					{% for field in form %}
-	  				<div class="row">
-							{{ field.errors }}
-							<div class="col-4">
-								<label for="{{ field.id_for_label }}">{{ field.label }}</label>
-							</div>
-							<div class="col-6">
-								{{ field }}
-							</div>
-							{% if field.help_text %}
-								<div class="col">
-									<p class="help">{{ field.help_text|safe }}</p>
-								</div>
-							{% endif %}
-						</div>
-					{% endfor %}
-				</div>
-				
 				<div class="row">
-					<div class="col-8"></div>
-					<div class="col-4">
-						<input type="submit" value="Submit" class="btn btn-primary btn-lg">
+					<div class="col-9">
+						{% for field in form %}
+		  				<div class="row">
+								{{ field.errors }}
+								<div class="col-6">
+									<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+								</div>
+								<div class="col-6">
+									{{ field }}
+								</div>
+								{% if field.help_text %}
+									<div class="col">
+										<p class="help">{{ field.help_text|safe }}</p>
+									</div>
+								{% endif %}
+							</div>
+						{% endfor %}
 					</div>
-				</div
-				
+					<div class="col-2">
+						<input type="submit" value="Submit" class="btn btn-primary btn-lg" />
+					</div>
+				</div>
 			</form>
 		</div>
 	</div>
@@ -67,12 +87,28 @@
 		// DOCUMENT LOAD 
 		////////////////////////////////////////////////////////////////////////////
 		$( document ).ready( function(){
-			// $("#add_text").on( 'click', function(e) {
-			// 
-			// });
-		});
+			 
+		
+			$('#text_list').children('li').children('.collapse').on('shown.bs.collapse', function() {
+				// $(this).css('height', 'auto');
+				$.ajax({ 
+					url: $(this).data('url'),
+					type : 'GET',
+					context: this,
+					success: function(data) {
+	            $(this).children('#manuscript_list').html( data );
+							$(this).children('#manuscript_list').css( 'height', 'auto' );
+					}
+				});
+				
+			});
 			
-{% endblock %}
+			
+		});
+		
+	</script>
+			
+{% endblock javascript %}
 
 
 

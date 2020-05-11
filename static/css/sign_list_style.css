@@ -1,10 +1,47 @@
-body.dragging, body.dragging * {
-  cursor: move !important;
+
+.dashboard {
+  width: 100vw;
+  height: 100vh;
+}
+
+.header {
+  /* flex: 0 1 auto; */
+  height: 60px;
+  padding: 6px 0 !important;
+  line-height: 60px !important;
+}
+
+.work_surface {
+  flex: 1 1 auto;
+  width: 100vw;
+}
+
+.text_wrapper {
+  height: 100%;
+  width: 60vw;
+  float: left;
+}
+
+canvas {
+  max-width: 100%;
+  max-height: auto;
+}
+
+.sign_list {
+  flex: 0 1 auto;
+  background: #ffffdd;
+  float: right;
+  /* max-width: 40%; */
+  width: 40vw;
+  /* height: 80vh; */
+  height: 90vh !important;
+  max-height: 90vh !important;
+  overflow: scroll;
 }
 
 .dragged {
   position: absolute;
-  opacity: 0.5;
+  opacity: 0.7;
   z-index: 2000;
 }
 
@@ -23,24 +60,6 @@ div.input_group {
 div.input-group-prepend {
   width: 30%;
   height: 100%;
-}
-
-div.sign_move_buttons {
-  width: 0px;
-  min-height: 100% !important;
-  /* background-color: black; */
-}
-input.move_sign_up {
-  cursor: n-resize !important;
-  height: 50% !important;
-  width: 100%;
-  /* background-color: blue; */
-}
-input.move_sign_down {
-  cursor: s-resize !important;
-  height: 50% !important;
-  width: 100%;
-  /* background-color: red; */
 }
 
 div.glyph_in_line {

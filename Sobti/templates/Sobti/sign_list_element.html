@@ -14,55 +14,46 @@
 			move_glyph_url="{% url 'sobti:move_glyph_position' page.manuscript.text.pk page.manuscript.pk page.pk %}">
 			{% csrf_token %}
 			
-			<div class="accordion" id="lineSet">
+			<div class="accordion" id="line_set">
 				
 				{% for line in page.line_set.all %}
 					<div class="card">
 						<div id="draw_line_{{ line.pk }}" class="draw_line" >
 							<div class="card-header" id="line{{ line.number_in_page }}">
-								<h2 class="mb-0">
-									<button id="line_glyph_collapse_{{ line.number_in_page }}" class="btn btn-link" type="button" data-toggle="collapse" data-target="#glyphs{{ line.number_in_page }}" aria-expanded="false" aria-controls="glyphs{{ line.number_in_page }}">
-										<h2 id="line_header_{{ line.pk }}">Line {{ line.number_in_page }}</h2>
-									</button>
-								</h2>
+								<button id="line_glyph_collapse_{{ line.number_in_page }}" class="btn btn-link" type="button" data-toggle="collapse" data-target="#glyph_set_{{ line.number_in_page }}" aria-expanded="false" aria-controls="line{{ line.number_in_page }}">
+									<h2 id="line_header_{{ line.pk }}">Line {{ line.number_in_page }}</h2>
+								</button>
 							</div>
 						</div>
 						
-						<div id="glyphs{{ line.number_in_page }}" class="show" aria-labelledby="line{{ line.number_in_page }}" data-parent="#lineSet">
+						<div id="glyph_set_{{ line.number_in_page }}" class="collapse show" aria-labelledby="line{{ line.number_in_page }}" >
 							<div class="card-body">
 								
 								<ol class="serialization vertical" data-pk="{{ line.pk }}" data-pos="{{ line.number_in_page }}">
 									
 									{% for glyph in line.glyph_set.all %}
 										
-										<li class="serialization list-group-item" data-pk="{{ glyph.pk }}" data-pos_rel="{{ glyph.number_in_line }}" data-pos_abs="{{ glyph.number_in_page }}" data-line_pk="{{ line.pk }}">
-											
-											<div id="draw_glyph_{{ glyph.pk }}">
-												
-												<div class="input-group">
-													
-													<div class="input-group-prepend">
-														<div class="icon-move" id="glyph_mover_{{ glyph.pk}}">
-															<h1>&#x13406;</h1><!-- &#x13343;&#x132F8;&#x13344; &#x1331D; &#x13284;1329B𓊛 1329C𓊜 𓂻𓈝-->
-														</div>
-															<div class="glyph_in_line" id="gil_{{ glyph.pk }}">
-																{{ glyph.number_in_line }}
-															</div>
-															<div class="glyph_image_container">
-																<div id="glyph_image_btn_{{ glyph.pk }}" data-pk="{{ glyph.pk }}" class="glyph_image_btn">
-																	<img src="{{ glyph.image.url }}" />
-																</div>
-															</div>
-														<!-- </div> -->
+										<li id="draw_glyph_{{ glyph.pk }}" class="serialization list-group-item" data-pk="{{ glyph.pk }}" data-pos_rel="{{ glyph.number_in_line }}" data-pos_abs="{{ glyph.number_in_page }}" data-line_pk="{{ line.pk }}">
+											<div class="input-group">
+												<div class="input-group-prepend">
+													<div class="icon-move" id="glyph_mover_{{ glyph.pk}}">
+														<h1>&#x13406;</h1><!-- &#x13343;&#x132F8;&#x13344; &#x1331D; &#x13284;1329B𓊛 1329C𓊜 𓂻𓈝-->
 													</div>
-													
-													<input id="glyph_{{glyph.pk}}_unicode_glyphs" 	value="{{ glyph.unicode_glyphs }}" 		placeholder="&#x13000;&#x13050;&#x133EB;" maxlength="3" 	class="glyph_input" 	type="text" />
-													<input id="glyph_{{glyph.pk}}_manuel_de_codage" value="{{ glyph.manuel_de_codage }}" 	placeholder="A1*B1:Z2" 										maxlength="10" 	class="text_input" 		type="text" />
-													<input id="glyph_{{glyph.pk}}_moller_number" 		value="{{ glyph.moller_number }}" 		placeholder="&#x1D578;" 									maxlength="5" 	class="number_input" 	type="text" />
-													<input id="glyph_{{glyph.pk}}_mainz_number" 		value="{{ glyph.mainz_number }}" 			placeholder="PAK" 												maxlength="12" 	class="number_input" 	type="text" />
-													
-
+													<div class="glyph_in_line" id="gil_{{ glyph.pk }}">
+														{{ glyph.number_in_line }}
+													</div>
+													<div class="glyph_image_container">
+														<div id="glyph_image_btn_{{ glyph.pk }}" data-pk="{{ glyph.pk }}" class="glyph_image_btn">
+															<img src="{{ glyph.image.url }}" />
+														</div>
+													</div>
 												</div>
+												
+												<input id="glyph_{{glyph.pk}}_unicode_glyphs" 	value="{{ glyph.unicode_glyphs }}" 		placeholder="&#x13000;&#x13050;&#x133EB;" maxlength="3" 	class="glyph_input" 	type="text" />
+												<input id="glyph_{{glyph.pk}}_manuel_de_codage" value="{{ glyph.manuel_de_codage }}" 	placeholder="A1*B1:Z2" 										maxlength="10" 	class="text_input" 		type="text" />
+												<input id="glyph_{{glyph.pk}}_moller_number" 		value="{{ glyph.moller_number }}" 		placeholder="&#x1D578;" 									maxlength="5" 	class="number_input" 	type="text" />
+												<input id="glyph_{{glyph.pk}}_mainz_number" 		value="{{ glyph.mainz_number }}" 			placeholder="PAK" 												maxlength="12" 	class="number_input" 	type="text" />
+												
 											</div>
 										</li>
 										
@@ -86,12 +77,15 @@
 
 <script type="text/javascript">
 	{% block sign_list_js %}
-		
 	
+		// How to get the show, shown, hide, hidden events
+		// $('#line_set').children('.card').children('.collapse').on('show.bs.collapse shown.bs.collapse hide.bs.collapse hidden.bs.collapse', function() { console.log($(this));});
+		
 		async function UpdateGlyphPositions() {
 			var vNewGlyphPositions = [];
 			var vNewGlyphLines = [];
 			var iAbsPos = 0;
+			var bChange = false;
 			
 			// Go through the new arrangement and determined which things have moved
 			$('ol.serialization').each( function(i,l) { 
@@ -101,13 +95,6 @@
 				$(l).children('li.serialization').each( function(j,g) { 
 					iGlyphPk = Number($(g).data('pk'));
 					iAbsPos++;
-					// console.log([i+1,j+1,$(g).data('pos_rel'),iAbsPos+1,$(g).data('pos_abs')]);
-					
-					// Update the information in the display as well
-					$('#gil_'+iGlyphPk).text(j+1);
-					$("#draw_glyph_"+iGlyphPk).data('i',i+1);
-					$("#draw_glyph_"+iGlyphPk).data('j',j+1);
-					$("#draw_glyph_"+iGlyphPk).data('n',n+1);
 					
 					// Make a list of glyphs that need to have their position values changed
 					if( (Number($(g).data('pos_rel')) != (j+1)) 
@@ -118,7 +105,7 @@
 						o.new_pos_abs = iAbsPos+1;
 						vNewGlyphPositions = vNewGlyphPositions.concat(o);
 						
-						
+						bChange = true;
 					}
 					// Make a list of glyphs that moved to a different line
 					if( Number($(g).data('line_pk')) != iLinePk ) {
@@ -127,49 +114,46 @@
 						o.new_line_pk = iLinePk;
 						o.new_line_pos = i+1;
 						vNewGlyphLines = vNewGlyphLines.concat(o);
+						
+						bChange = true;
 					}
 				})
 				
 			});
 			
-			var oUpdate = new Object();
-			oUpdate.new_glyph_positions = vNewGlyphPositions;
-			oUpdate.new_glyph_lines = vNewGlyphLines;
-			
-			dRes = await AjaxUpdate( $('ol.serialization').first().closest('form').attr("move_glyph_url"), oUpdate)
-			
-			// If the update is successful, update the display
-			if(dRes.success) {
-				$('ol.serialization').each( function(i,l) { 
-					var iLinePk = Number($(l).data('pk'));
-					
-					var nGlyphs = $(l).children('li.serialization').length;
-					vCMGlyphs[i] = iris(nGlyphs);
-					$(l).children('li.serialization').each( function(j,g) { 
-						iGlyphPk = Number($(g).data('pk'));
-						iAbsPos++;
-						// $("#glyph_mover_"+iGlyphPk).css('color', "rgb(" + vCMGlyphs[i][j].map(function(f) {return f*0.25+193;}).toString() + ")");
-						$("#glyph_mover_"+iGlyphPk).css('background-color', "rgb(" + vCMGlyphs[i][j].toString() + ")");
+			// If something has changed, run the update
+			if(bChange) {
+				var oUpdate = new Object();
+				oUpdate.new_glyph_positions = vNewGlyphPositions;
+				oUpdate.new_glyph_lines = vNewGlyphLines;
+				
+				dRes = await AjaxUpdate( $('ol.serialization').first().closest('form').attr("move_glyph_url"), oUpdate)
+				
+				// If the update is successful, update the display
+				if(dRes.success) {
+					$('ol.serialization').each( function(i,l) { 
+						var iLinePk = Number($(l).data('pk'));
 						
-						$('#gil_'+iGlyphPk).text(j+1);
-						$("#draw_glyph_"+iGlyphPk).data('i',i+1);
-						$("#draw_glyph_"+iGlyphPk).data('j',j+1);
-						$("#draw_glyph_"+iGlyphPk).data('n',nGlyphs+1);
+						var nGlyphs = $(l).children('li.serialization').length;
+						vCMGlyphs[i] = iris(nGlyphs);
+						$(l).children('li.serialization').each( function(j,g) { 
+							iGlyphPk = Number($(g).data('pk'));
+							iAbsPos++;
+							// $("#glyph_mover_"+iGlyphPk).css('color', "rgb(" + vCMGlyphs[i][j].map(function(f) {return f*0.25+193;}).toString() + ")");
+							$("#glyph_mover_"+iGlyphPk).css('background-color', "rgb(" + vCMGlyphs[i][j].toString() + ")");
+							
+							$('#gil_'+iGlyphPk).text(j+1);
+							$("#draw_glyph_"+iGlyphPk).data('i',i+1);
+							$("#draw_glyph_"+iGlyphPk).data('j',j+1);
+							$("#draw_glyph_"+iGlyphPk).data('n',nGlyphs+1);
+						});
 					});
-				});
+				}
+				else console.log(dRes);
 			}
-			else alert('Database update failed.');
-			
 		}
 		
 		function AjaxUpdate(sUrl, oData) {
-			$.ajaxSetup({
-				beforeSend: function(xhr, settings) {
-					if (!(/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type)) && !this.crossDomain) {
-						xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
-					}
-				}
-			});
 			return $.ajax({
 				url: sUrl,
 				type : "POST",
@@ -220,10 +204,6 @@
 			}
 		});
 		
-		// $('li.serialization').on( 'change', function(e) { console.log( $(this).data('pk') ) } );
-		// $('ol.serialization').each( function(i,o) { console.log( $(o).data('pk') ); $(o).children('li.serialization').each( function(i,o) { console.log( $(o).data('pk') ); } ) })
-		
-		// $('.glyph_image_btn').on( 'dblclick', function(e) { console.log($(this).data('pk')) } );
 		
 	{% endblock sign_list_js %}
 
