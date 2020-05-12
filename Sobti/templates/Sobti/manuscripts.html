@@ -4,21 +4,21 @@
 
 {% block content %}
 
-	<h1>Manuscripts in {{ text.title }}</h1>
+	<h1><a href="{% url 'sobti:texts' %}">𓉐</a></h1>
+	<h1>Text: {{ text.title }}</h1>
+	<h2>Manuscripts:</h2>
 
-	{% if text %}
-		<ul class="list-group list-group-flush">
-			{% for manuscript in text.manuscript_set.all %}
-				<li class="list-group-item">
-					<a href="{% url 'sobti:pages' text.id manuscript.id %}">
-						{{ manuscript.text.title }} – {{ manuscript.collection.name }}: {{ manuscript.accession_number }}
-					</a>
-				</li>
-			{% endfor %}
-		</ul>
-	{% else %}
-		<p>No manuscripts have been added for {{ text.title }}.</p>
-	{% endif %}
+	<ul class="list-group list-group-flush">
+		{% for manuscript in text.manuscript_set.all %}
+			<li class="list-group-item">
+				<a href="{% url 'sobti:pages' text.id manuscript.id %}">
+					{{ manuscript.collection.name }}: {{ manuscript.accession_number }}
+				</a>
+			</li>
+		{% empty %}
+			<p>No manuscripts have been added for {{ text.title }}.</p>
+		{% endfor %}
+	</ul>
 	
 	
 	<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#add_text" aria-expanded="false" aria-controls="collapseAddText">
@@ -49,7 +49,7 @@
 						{% endfor %}
 					</div>
 					<div class="col-2">
-						<input type="submit" value="Submit" class="btn btn-primary btn-lg" />
+						<input type="submit" value="Create Manuscript" class="btn btn-primary btn-lg" />
 					</div>
 				</div>
 			</form>
@@ -58,21 +58,24 @@
 		
 {% endblock %}
 
+{% comment %}
 {% block footer %}
 	<h3><a href="{% url 'sobti:texts' %}">Back to Text List</a></h3>
 {% endblock %}
+{% endcomment %}
 
 {% block javascript %}
-<script type="text/javascript">
-	
-	////////////////////////////////////////////////////////////////////////////
-	// DOCUMENT LOAD 
-	////////////////////////////////////////////////////////////////////////////
-	$( document ).ready( function(){
-		// $("#add_text").on( 'click', function(e) {
-		// 
-		// });
-	});
+	<script type="text/javascript">
 		
+		////////////////////////////////////////////////////////////////////////////
+		// DOCUMENT LOAD 
+		////////////////////////////////////////////////////////////////////////////
+		$( document ).ready( function(){
+			// $("#add_text").on( 'click', function(e) {
+			// 
+			// });
+		});
+		
+	</script>	
 {% endblock %}
 

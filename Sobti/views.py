@@ -65,8 +65,14 @@ def PageList(request, text_id, manuscript_id):
                     'error_message': "ⲙⲡⲟⲩϫⲓⲙⲓ ⲙⲡⲓϫⲟⲙ"}
         return render(request, 'Sobti/pages.html', context)
 
-from django.conf import settings
+def PageDelete(request, text_id, manuscript_id, page_id):
+    page = get_object_or_404(Page, pk=page_id)
+    page.delete()
+    print('delete page')
+    return HttpResponseRedirect(reverse('sobti:pages', args=(page.manuscript.text.pk,page.manuscript.pk,)))
+    
 
+from django.conf import settings
 def PageProcess(page_id):
     page = get_object_or_404(Page, pk=page_id)
     

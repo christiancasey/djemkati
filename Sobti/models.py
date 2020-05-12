@@ -12,7 +12,7 @@ class Text(models.Model):
 	def __str__(self):
 		return self.title
 	
-	title = models.CharField("Name of composition", max_length=200)
+	title = models.CharField("Name of text", max_length=200)
 	era_composed = models.CharField("Approximate date of the text's original composition", max_length=200, blank=True)
 
 class ManuscriptManager(models.Manager):
@@ -25,7 +25,7 @@ class Manuscript(models.Model):
 	
 	text = models.ForeignKey(Text, on_delete=models.CASCADE)
 	collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
-	accession_number = models.CharField("Acquisition number", max_length=200, blank=True)
+	accession_number = models.CharField("Accession number", max_length=200, blank=True)
 	find_date = models.CharField("Date found in modern era", max_length=300, blank=True)
 	provenance = models.CharField("Geographic location of origin", max_length=200, blank=True)
 	date_added = models.DateTimeField("Date added to the database", blank=True, default=timezone.now)
