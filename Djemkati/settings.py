@@ -28,7 +28,7 @@ SECRET_KEY = 'yn-2n2_06y8^2%a5-p5$5sj-wnu8^7t0tp$r4h@v+wr%te6x8i'
 DEBUG = True
 
 from socket import gethostname, gethostbyname 
-ALLOWED_HOSTS = [gethostname(), gethostbyname(gethostname()), 'localhost']
+ALLOWED_HOSTS = [gethostname(), gethostbyname(gethostname()), 'localhost', 'ec2-35-174-105-134.compute-1.amazonaws.com']
 
 
 # Application definition
@@ -79,12 +79,8 @@ WSGI_APPLICATION = 'Djemkati.wsgi.application'
 
 DATABASES = {
     'default': {
-		'ENGINE': 'django.db.backends.postgresql_psycopg2',
-		'NAME': 'DatabaseSobti',
-		'USER': 'sobtiuser',
-		'PASSWORD': '6_Z8g?PCJpDBnvu~',
-		'HOST': 'sobti.c3srntjg4zmr.us-east-1.rds.amazonaws.com',
-		'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
