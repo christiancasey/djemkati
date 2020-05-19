@@ -28,7 +28,7 @@ SECRET_KEY = 'yn-2n2_06y8^2%a5-p5$5sj-wnu8^7t0tp$r4h@v+wr%te6x8i'
 DEBUG = True
 
 from socket import gethostname, gethostbyname 
-ALLOWED_HOSTS = [gethostname(), gethostbyname(gethostname()), 'localhost', 'ec2-35-174-105-134.compute-1.amazonaws.com']
+ALLOWED_HOSTS = ['ec2-35-174-105-134.compute-1.amazonaws.com', 'ip-172-31-81-173.ec2.internal']
 
 
 # Application definition
