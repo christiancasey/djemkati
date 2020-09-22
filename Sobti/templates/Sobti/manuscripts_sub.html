@@ -4,7 +4,7 @@
 		{% for manuscript in text.manuscript_set.all %}
 			<li class="list-group-item">
 				<a href="{% url 'sobti:pages' text.id manuscript.id %}">
-					𓏛 {{ manuscript.text.title }} – {{ manuscript.collection.name }}: {{ manuscript.accession_number }}
+					𓏛 {{ manuscript.text.title }} — {{ manuscript.collection.name }}: {{ manuscript.accession_number }}
 				</a>
 			</li>
 		{% empty %}

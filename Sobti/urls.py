@@ -10,7 +10,6 @@ urlpatterns = [
 	path('<int:text_id>/<int:manuscript_id>/<int:page_id>/', views.PageDetail, name='page_detail'),
 	path('<int:text_id>/<int:manuscript_id>/<int:page_id>/page_delete', views.PageDelete, name='page_delete'),
 	path('<int:text_id>/<int:manuscript_id>/<int:page_id>/ipt', views.ImageProcessing, name='image_processing_tests'),
-	path('<int:text_id>/<int:manuscript_id>/<int:page_id>/process', views.PageProcess, name='page_process'),
 	path('<int:text_id>/<int:manuscript_id>/<int:page_id>/modify_glyph', views.ModifyGlyphData, name='modify_glyph_data'),
 	path('<int:text_id>/<int:manuscript_id>/<int:page_id>/move_glyph', views.MoveGlyphPosition, name='move_glyph_position'),
 ]

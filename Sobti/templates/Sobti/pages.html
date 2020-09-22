@@ -1,6 +1,6 @@
 {% extends 'Sobti/base.html' %}	
 
-{% block title %}Pages in Manuscript: {{ manuscript.text.title }} – {{ manuscript.accession_number }}{% endblock %}
+{% block title %}Pages in Manuscript: {{ manuscript.text.title }} — {{ manuscript.accession_number }}{% endblock %}
 
 {% block stylesheet %}
 
@@ -12,44 +12,49 @@
 	<h1>
 		Text: <a href="{% url 'sobti:manuscripts' manuscript.text.id %}">{{ manuscript.text.title }}</a>
 	</h1>
-	<h2> 
-		Manuscript: {{ manuscript.collection.name }} {{ manuscript.accession_number }}
-	</h2>
-	<h3>Pages:</h3>
-
-
 	{% if manuscript %}
+		<h2> 
+			Manuscript: {{ manuscript.collection.name }} {{ manuscript.accession_number }}
+		</h2>
+		<h3>Pages:</h3>
+	
 		<ul class="list-group list-group-flush">
 			{% for page in manuscript.page_set.all %}
-				<li class="list-group-item">
-					<div class="row">
-						<div class="col-8">
-							<a href="{% url 'sobti:page_detail' manuscript.text.id manuscript.id page.id %}">
-								{% if page.image_thumbnail %}
-									<img src="{{ page.image_thumbnail.url }}" class="img-thumbnail" />
-								{% else %}
-									{% comment %}
-									<a href="{% url 'sobti:page_process' manuscript.text.id manuscript.id page.id %}"> [[Process Page]]</a>
-									{% endcomment %}
-								{% endif %}
-								{{ manuscript.text.title }} – {{ manuscript.collection.name }}: {{ manuscript.accession_number }}, Page {{ page.number_in_manuscript }}
-							</a>
-						</div>
-						<div class="col-2">
-							<form class="delete_page" 
-								onSubmit="return confirm('Are you sure you want to delete:\n{{ manuscript.text.title }} – {{ manuscript.collection.name }}: {{ manuscript.accession_number }}, Page {{ page.number_in_manuscript }}?\nThis will clear all data associated with this page.\nDeleting cannot be undone.');" 
-								action="{% url 'sobti:page_delete' manuscript.text.id manuscript.id page.id %}" 
-								method="POST">
-								{% csrf_token %}
-								<input class="btn btn-default btn-danger" name="delete" type="submit" value="Delete Page" />
-							</form>
-						</div>
-					</div>
-				</li>
+					<li class="list-group-item">
+						<a href="{% url 'sobti:page_detail' manuscript.text.id manuscript.id page.id %}">
+
+							<div class="row">
+								<div class="col-2">
+									<!-- {{ forloop.counter }} -->
+									{% if page.image_thumbnail %}
+										<img src="{{ page.image_thumbnail.url }}" class="img-thumbnail" />
+									{% else %}
+										{% comment %}
+										<a href="{% url 'sobti:page_process' manuscript.text.id manuscript.id page.id %}"> [[Process Page]]</a>
+										{% endcomment %}
+									{% endif %}
+								</div>
+								<div class="col-8">
+									{{ manuscript.text.title }} — {{ manuscript.collection.name }}: {{ manuscript.accession_number }}, Page {{ page.number_in_manuscript }}
+								</div>
+								<div class="col-2">
+									<!-- onSubmit="return confirm('Are you sure you want to delete:\n{{ manuscript.text.title }} — {{ manuscript.collection.name }}: {{ manuscript.accession_number }}, Page {{ page.number_in_manuscript }}?\nThis will clear all data associated with this page.\nDeleting cannot be undone.');"  -->
+									<form class="delete_page" 
+										action="{% url 'sobti:page_delete' manuscript.text.id manuscript.id page.id %}" 
+										method="POST">
+										{% csrf_token %}
+										<input class="btn btn-default btn-danger" name="delete" type="submit" value="Delete Page" />
+									</form>
+								</div>
+							</div>
+						</a>
+					</li>
+			{% empty %}
+				<p>No pages have been added for manuscript: {{ manuscript.text.title }} — {{ manuscript.accession_number }}.</p>
 			{% endfor %}
 		</ul>
 	{% else %}
-		<p>No pages have been added for {{ manuscript.text.title }} – {{ manuscript.accession_number }}.</p>
+		<p>Error: Current manuscript not found.</p>
 	{% endif %}
 	
 	<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#add_text" aria-expanded="false" aria-controls="collapseAddText">
@@ -57,8 +62,8 @@
 	</button>
 	<div class="collapse" id="add_text">
 		<div class="card card-body">
+			<!-- onSubmit="return confirm('After clicking ok, please wait for image processing to complete. This will take several seconds. The new page will appear in the list when it is ready.');"  -->
 			<form 
-				onSubmit="return confirm('After clicking ok, please wait for image processing to complete. This will take several seconds. The new page will appear in the list when it is ready.');" 
 				action="{% url 'sobti:pages' manuscript.text.id manuscript.id %}" 
 				method="post" enctype="multipart/form-data">
 				{% csrf_token %}

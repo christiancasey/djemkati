@@ -13,7 +13,7 @@
 		<div class="dashboard">
 			<div class="header">
 				<h1>
-					<a href="{% url 'sobti:manuscripts' page.manuscript.text.id %}">{{ page.manuscript.text.title }}</a> – 
+					<a href="{% url 'sobti:manuscripts' page.manuscript.text.id %}">{{ page.manuscript.text.title }}</a> — 
 					<a href="{% url 'sobti:pages' page.manuscript.text.id page.manuscript.id %}">{{ page.manuscript.collection.name }}: {{ page.manuscript.accession_number }}</a>, 
 					Page {{ page.number_in_manuscript }}
 				</h1>

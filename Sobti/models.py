@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.gis.geos import GEOSGeometry, LineString, Point
+from django.contrib.gis.db import models
 
 
 class Collection(models.Model):
@@ -21,7 +23,7 @@ class ManuscriptManager(models.Manager):
 		
 class Manuscript(models.Model):
 	def __str__(self):
-		return self.text.title + ' – ' + self.collection.name + ': ' + self.accession_number
+		return self.text.title + ' — ' + self.collection.name + ': ' + self.accession_number
 	
 	text = models.ForeignKey(Text, on_delete=models.CASCADE)
 	collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
@@ -40,7 +42,7 @@ class PageManager(models.Manager):
 class Page(models.Model):
 	def __str__(self):
 		return self.manuscript.text.title \
-		+ ' – ' + self.manuscript.collection.name \
+		+ ' — ' + self.manuscript.collection.name \
 		+ ': ' + self.manuscript.accession_number \
 		+ (', p. %i' % self.number_in_manuscript )
 	
@@ -72,6 +74,8 @@ class Line(models.Model):
 	number_in_manuscript = models.IntegerField("Sequence of line in manuscript as a whole", null=True)
 	# image_filename = models.CharField("Name of line image minus extension", max_length=300, blank=True, default='')
 	# polygon = models.ForeignKey(Polygon, on_delete=models.CASCADE, null=True, blank=True)
+	shape = models.LineStringField(blank=True, null=True)
+	# shape = models.IntegerField(null=True, default=0)
 	
 	objects = RegionManager()
 	
@@ -89,6 +93,7 @@ class Glyph(models.Model):
 	moller_number = models.CharField("Entry number in Möller's Palaeographie", max_length=50, blank=True)
 	mainz_number = models.CharField("Entry number in Mainz Palaeographie", max_length=100, blank=True)
 	# polygon = models.ForeignKey(Polygon, on_delete=models.CASCADE, null=True, blank=True)
+	shape = models.LineStringField(blank=True, null=True)
 	
 	# objects = models.Manager()
 	objects = RegionManager()
@@ -98,7 +103,7 @@ class Polygon(models.Model):
         s = '(' + self.polygon_type + ')'
         if self.line:
             s = s + ' ' + self.line.page.manuscript.text.title \
-    		+ ' – ' + self.line.page.manuscript.collection.name \
+    		+ ' — ' + self.line.page.manuscript.collection.name \
     		+ ': ' + self.line.page.manuscript.accession_number \
     		+ (', p. %i, l. %i' % (self.line.page.number_in_manuscript, self.line.number_in_page) )
             
