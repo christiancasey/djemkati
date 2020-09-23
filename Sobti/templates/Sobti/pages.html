@@ -40,6 +40,7 @@
 								<div class="col-2">
 									<!-- onSubmit="return confirm('Are you sure you want to delete:\n{{ manuscript.text.title }} — {{ manuscript.collection.name }}: {{ manuscript.accession_number }}, Page {{ page.number_in_manuscript }}?\nThis will clear all data associated with this page.\nDeleting cannot be undone.');"  -->
 									<form class="delete_page" 
+										onSubmit="return confirm('Are you sure you want to delete:\n{{ manuscript.text.title }} — {{ manuscript.collection.name }}: {{ manuscript.accession_number }}, Page {{ page.number_in_manuscript }}?\nThis will clear all data associated with this page.\nDeleting cannot be undone.');"
 										action="{% url 'sobti:page_delete' manuscript.text.id manuscript.id page.id %}" 
 										method="POST">
 										{% csrf_token %}
@@ -64,6 +65,7 @@
 		<div class="card card-body">
 			<!-- onSubmit="return confirm('After clicking ok, please wait for image processing to complete. This will take several seconds. The new page will appear in the list when it is ready.');"  -->
 			<form 
+				onSubmit="return confirm('After clicking ok, please wait for image processing to complete. This could take up to a minute. The new page will appear in the list when it is ready.');"
 				action="{% url 'sobti:pages' manuscript.text.id manuscript.id %}" 
 				method="post" enctype="multipart/form-data">
 				{% csrf_token %}

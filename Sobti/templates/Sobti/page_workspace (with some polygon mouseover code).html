@@ -44,63 +44,6 @@
 	
 	<script type="text/javascript">
 		
-		// canvas = $("#facsimile")
-		var canvas = document.getElementById("facsimile");
-		
-		var ctx = canvas.getContext("2d");
-		var cw = canvas.width;
-		var ch = canvas.height;
-
-		function reOffset() {
-			var BB = canvas.getBoundingClientRect();
-			offsetX = BB.left;
-			offsetY = BB.top;
-		}
-		var offsetX, offsetY;
-		window.onscroll = function(e) {
-			reOffset();
-		}
-		window.onresize = function(e) {
-			reOffset();
-		}
-		
-				
-		var fInertAlpha = 0.2;
-		function handleMouseMove(e) {
-			// tell the browser we're handling this event
-			e.preventDefault();
-			e.stopPropagation();
-			// mouse position
-			mouseX = parseInt(e.clientX - offsetX);
-			mouseY = parseInt(e.clientY - offsetY);
-			// test if mouse is inside any shape(s)
-			// and redraw different alpha based on hovering
-			cw = canvas.width;
-			ch = canvas.height;
-			ctx.clearRect(0, 0, cw, ch);
-			for (var i = 0; i < dbData.lines.length; i++) {
-				defineshape(dbData.lines[i].polygon, 0.2);
-				if (ctx.isPointInPath(mouseX, mouseY)) {
-					ctx.globalAlpha = 0.8;
-				} else {
-					ctx.globalAlpha = fInertAlpha;
-				}
-				ctx.fill();
-				
-				for(var j = 0; j < dbData.lines[i].glyphs.length; j++) {
-					defineshape(dbData.lines[i].glyphs[j].polygon);
-					if (ctx.isPointInPath(mouseX, mouseY)) {
-						ctx.globalAlpha = 0.8;
-					} else {
-						ctx.globalAlpha = fInertAlpha;
-					}
-					ctx.fill();
-				}
-			}
-		}
-		
-		
-		
 		// Generate dataset for all subsequent operations
 		var dbData = [];
 		var nLines = 0;
@@ -109,22 +52,6 @@
 		
 		function getColorString(vCMij,fAlpha) {
 			return "rgba(" + [].concat(vCMij, [fAlpha]).toString() + ")";
-		}
-		
-		function defineshape(s, fAlpha) {
-			sFillColor = getColorString(vCMLines[i],fAlpha);
-			sStrokeColor = getColorString(vCMLines[i],fAlpha);
-			ctx.fillPolygon(s, sFillColor, sStrokeColor, 6);
-			
-			ctx.globalAlpha = fInertAlpha;
-			ctx.beginPath();
-		  ctx.moveTo(s[0][0], s[0][1]);
-		  for (var i = 1; i < s.length; i++) {
-		    ctx.lineTo(s[i][0], s[i][1]);
-		  }
-		  ctx.closePath();
-			
-			ctx.globalAlpha = fInertAlpha;
 		}
 		
 		
@@ -193,7 +120,7 @@
 					i = $(this).data('i');
 					// sFillColor = "rgba(" + [].concat(vCMLines[i], [0.1]).toString() + ")";
 					sFillColor = getColorString(vCMLines[i],0.1);
-					sStrokeColor = "rgba(" + [].concat(vCMLines[i], [0.7]).toString() + ")";
+					sStrokeColor = getColorString(vCMLines[i],0.7);
 					ctx.fillPolygon($(this).data('polygon'), sFillColor, sStrokeColor, 6);
 				});
 				
@@ -216,9 +143,8 @@
 						i = $(this).data('i');
 						j = $(this).data('j');
 						vCMGlyphs[i] = iris($(this).data('n'));
-						sFillColor = "rgba(" + [].concat(vCMGlyphs[i][j], [0.6]).toString() + ")";
 						sFillColor = getColorString(vCMGlyphs[i][j],0.6);
-						sStrokeColor = "rgba(" + [].concat(vCMGlyphs[i][j], [0.7]).toString() + ")";
+						sStrokeColor = getColorString(vCMGlyphs[i][j],0.7);
 						ctx.fillPolygon($(this).data('polygon'), sFillColor, null, 4);
 					});
 					

@@ -109,26 +109,26 @@
 		var dbData = JSON.parse( '{{ data_package|safe }}' );	
 		
 		var nLines = dbData.lines.length;
-	  var vCMLines = iris(nLines);
+		var vCMLines = iris(nLines);
 		
 		////////////////////////////////////////////////////////////////////////////
 		// DOCUMENT LOAD 
 		////////////////////////////////////////////////////////////////////////////
-	  $( document ).ready( function(){
-	    
-	    vCMGlyphs = new Array(nLines).fill([]);
+		$( document ).ready( function(){
+			
+			vCMGlyphs = new Array(nLines).fill([]);
 			
 			// LINE LOOP
 			for(var i=0; i<nLines; i++) {
 				$("#line_header_"+dbData.lines[i].number_in_page).css('color', "rgb(" + vCMLines[i].toString() + ")");
-	      $("#line_header_"+dbData.lines[i].number_in_page).css('background-color', "rgb(" + vCMLines[i].map(function(f) {return f*0.25+193;}).toString() + ")")
+				$("#line_header_"+dbData.lines[i].number_in_page).css('background-color', "rgb(" + vCMLines[i].map(function(f) {return f*0.25+193;}).toString() + ")")
 				
 				$("#draw_line_"+dbData.lines[i].pk).data('i', i);
 				$("#draw_line_"+dbData.lines[i].pk).on( 'mouseout', function(e) {
-	        clearCanvas();
-	      });				
-	      $("#draw_line_"+dbData.lines[i].pk).on( 'mouseover', function(e) {
-	        e.preventDefault();
+					clearCanvas();
+				});				
+				$("#draw_line_"+dbData.lines[i].pk).on( 'mouseover', function(e) {
+					e.preventDefault();
 					clearCanvas();
 					i = $(this).data('i');
 					sFillColor = "rgba(" + [].concat(vCMLines[i], [0.8]).toString() + ")";
@@ -171,7 +171,7 @@
 							e.preventDefault();
 							var oUpdate = new Object();
 							oUpdate.pk = $(this).data('pk');
-							oUpdate.field  = $(this).data('field');
+							oUpdate.field	= $(this).data('field');
 							oUpdate.value = $(this).val();
 							
 							$.ajaxSetup({
@@ -229,43 +229,43 @@
 				}
 			}
 			
-  	});
+		});
 	
 		function clearCanvas() {
-	    var canvas = document.getElementById("canvas");
-	    ctx = canvas.getContext("2d");
-	    canvas.width = dbData.facsimile.width;
-	    canvas.height = dbData.facsimile.height;
-	    ctx.clearRect(0,0,canvas.width,canvas.height); 
-	    var background = new Image();
-	    background.src = dbData.facsimile.url;
-	    ctx.drawImage(background,0,0);
-	  }
+			var canvas = document.getElementById("canvas");
+			ctx = canvas.getContext("2d");
+			canvas.width = dbData.facsimile.width;
+			canvas.height = dbData.facsimile.height;
+			ctx.clearRect(0,0,canvas.width,canvas.height); 
+			var background = new Image();
+			background.src = dbData.facsimile.url;
+			ctx.drawImage(background,0,0);
+		}
 	
-	  //create and fill polygon
-	  CanvasRenderingContext2D.prototype.fillPolygon = function (pointsArray, fillColor, strokeColor, linewidth) {
-	    if (pointsArray.length <= 0) return;
-	    this.moveTo(pointsArray[0][0], pointsArray[0][1]);
-	    for (var i = 0; i < pointsArray.length; i++) {
-	        this.lineTo(pointsArray[i][0], pointsArray[i][1]);
-	    }
-	    if (strokeColor != null && strokeColor != undefined) {
-	      this.strokeStyle = strokeColor;
-	      this.lineWidth = linewidth;
-	      this.imageSmoothingEnabled = true;
-	      this.imageSmoothingQuality = 'high';
-	      this.lineCap = 'round';
-	      this.lineJoin = 'round';
-	      this.closePath();
-	      this.stroke();
-	    }
+		//create and fill polygon
+		CanvasRenderingContext2D.prototype.fillPolygon = function (pointsArray, fillColor, strokeColor, linewidth) {
+			if (pointsArray.length <= 0) return;
+			this.moveTo(pointsArray[0][0], pointsArray[0][1]);
+			for (var i = 0; i < pointsArray.length; i++) {
+					this.lineTo(pointsArray[i][0], pointsArray[i][1]);
+			}
+			if (strokeColor != null && strokeColor != undefined) {
+				this.strokeStyle = strokeColor;
+				this.lineWidth = linewidth;
+				this.imageSmoothingEnabled = true;
+				this.imageSmoothingQuality = 'high';
+				this.lineCap = 'round';
+				this.lineJoin = 'round';
+				this.closePath();
+				this.stroke();
+			}
 
-	    if (fillColor != null && fillColor != undefined) {
-	      this.fillStyle = fillColor;
-	      this.fill();
-	    }
-	    return this;
-	  }
+			if (fillColor != null && fillColor != undefined) {
+				this.fillStyle = fillColor;
+				this.fill();
+			}
+			return this;
+		}
 
 
 	</script>

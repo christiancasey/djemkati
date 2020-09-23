@@ -344,11 +344,7 @@ def PageProcess(page):
 def GetObjectPolygon(dbObj,sType='line'):
 	vPolygon = []
 	if not dbObj is None:
-		v = dbObj.polygon_set.filter(polygon_type=sType)
-		if len(v) == 1:
-			v = v[0].polygonpoint_set.order_by('t_coordinate')
-			for point in v:
-				vPolygon = vPolygon + [[point.x_coordinate, point.y_coordinate ]]
+		vPolygon = [list(xy) for xy in dbObj.shape]
 	
 	return vPolygon
 	

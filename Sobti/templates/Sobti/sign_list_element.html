@@ -18,50 +18,57 @@
 				
 				{% for line in page.line_set.all %}
 					<div class="card">
-						<div id="draw_line_{{ line.pk }}" class="draw_line" >
-							<div class="card-header" id="line{{ line.number_in_page }}">
-								<button id="line_glyph_collapse_{{ line.number_in_page }}" class="btn btn-link" type="button" data-toggle="collapse" data-target="#glyph_set_{{ line.number_in_page }}" aria-expanded="false" aria-controls="line{{ line.number_in_page }}">
-									<h2 id="line_header_{{ line.pk }}">Line {{ line.number_in_page }}</h2>
-								</button>
+						<!-- <div style="float: left; width: 100px;">
+							<button id="line_glyph_collapse_{{ line.number_in_page }}" class="btn btn-link" type="button" data-toggle="collapse" data-target="#glyph_set_{{ line.number_in_page }}" aria-expanded="false" aria-controls="line{{ line.number_in_page }}">
+								<h2 id="line_header_{{ line.pk }}" style="transform: rotate(-90deg);">Line {{ line.number_in_page }}</h2>
+							</button>
+						</div> -->
+						<!-- <div style="float: left; width: 400px;"> -->
+							<div id="draw_line_{{ line.pk }}" class="draw_line" >
+								<div class="card-header" id="line{{ line.number_in_page }}">
+									<button id="line_glyph_collapse_{{ line.number_in_page }}" class="btn btn-link" type="button" data-toggle="collapse" data-target="#glyph_set_{{ line.number_in_page }}" aria-expanded="false" aria-controls="line{{ line.number_in_page }}">
+										<h2 id="line_header_{{ line.pk }}">Line {{ line.number_in_page }}</h2>
+									</button>
+								</div>
 							</div>
-						</div>
-						
-						<div id="glyph_set_{{ line.number_in_page }}" class="collapse show" aria-labelledby="line{{ line.number_in_page }}" >
-							<div class="card-body">
+							
+							<div id="glyph_set_{{ line.number_in_page }}" class="collapse show" aria-labelledby="line{{ line.number_in_page }}" >
 								
-								<ol class="serialization vertical" data-pk="{{ line.pk }}" data-pos="{{ line.number_in_page }}">
-									
-									{% for glyph in line.glyph_set.all %}
+								<div class="card-body">
+									<ol class="serialization vertical" data-pk="{{ line.pk }}" data-pos="{{ line.number_in_page }}">
 										
-										<li id="draw_glyph_{{ glyph.pk }}" class="serialization list-group-item" data-pk="{{ glyph.pk }}" data-pos_rel="{{ glyph.number_in_line }}" data-pos_abs="{{ glyph.number_in_page }}" data-line_pk="{{ line.pk }}">
-											<div class="input-group">
-												<div class="input-group-prepend">
-													<div class="icon-move" id="glyph_mover_{{ glyph.pk}}">
-														<h1>&#x13406;</h1><!-- &#x13343;&#x132F8;&#x13344; &#x1331D; &#x13284;1329B𓊛 1329C𓊜 𓂻𓈝-->
-													</div>
-													<div class="glyph_in_line" id="gil_{{ glyph.pk }}">
-														{{ glyph.number_in_line }}
-													</div>
-													<div class="glyph_image_container">
-														<div id="glyph_image_btn_{{ glyph.pk }}" data-pk="{{ glyph.pk }}" class="glyph_image_btn">
-															<img src="{{ glyph.image.url }}" />
+										{% for glyph in line.glyph_set.all %}
+											
+											<li id="draw_glyph_{{ glyph.pk }}" class="serialization list-group-item" data-pk="{{ glyph.pk }}" data-pos_rel="{{ glyph.number_in_line }}" data-pos_abs="{{ glyph.number_in_page }}" data-line_pk="{{ line.pk }}">
+												<div class="input-group">
+													<div class="input-group-prepend">
+														<div class="icon-move" id="glyph_mover_{{ glyph.pk}}">
+															<h1>&#x13406;</h1><!-- &#x13343;&#x132F8;&#x13344; &#x1331D; &#x13284;1329B𓊛 1329C𓊜 𓂻𓈝-->
+														</div>
+														<div class="glyph_in_line" id="gil_{{ glyph.pk }}">
+															{{ glyph.number_in_line }}
+														</div>
+														<div class="glyph_image_container">
+															<div id="glyph_image_btn_{{ glyph.pk }}" data-pk="{{ glyph.pk }}" class="glyph_image_btn">
+																<img src="{{ glyph.image.url }}" />
+															</div>
 														</div>
 													</div>
+													
+													<input id="glyph_{{glyph.pk}}_unicode_glyphs" 	value="{{ glyph.unicode_glyphs }}" 		placeholder="&#x13000;&#x13050;&#x133EB;" maxlength="3" 	class="glyph_input" 	type="text" />
+													<input id="glyph_{{glyph.pk}}_manuel_de_codage" value="{{ glyph.manuel_de_codage }}" 	placeholder="A1*B1:Z2" 										maxlength="10" 	class="text_input" 		type="text" />
+													<input id="glyph_{{glyph.pk}}_moller_number" 		value="{{ glyph.moller_number }}" 		placeholder="&#x1D578;" 									maxlength="5" 	class="number_input" 	type="text" />
+													<input id="glyph_{{glyph.pk}}_mainz_number" 		value="{{ glyph.mainz_number }}" 			placeholder="PAK" 												maxlength="12" 	class="number_input" 	type="text" />
+													
 												</div>
-												
-												<input id="glyph_{{glyph.pk}}_unicode_glyphs" 	value="{{ glyph.unicode_glyphs }}" 		placeholder="&#x13000;&#x13050;&#x133EB;" maxlength="3" 	class="glyph_input" 	type="text" />
-												<input id="glyph_{{glyph.pk}}_manuel_de_codage" value="{{ glyph.manuel_de_codage }}" 	placeholder="A1*B1:Z2" 										maxlength="10" 	class="text_input" 		type="text" />
-												<input id="glyph_{{glyph.pk}}_moller_number" 		value="{{ glyph.moller_number }}" 		placeholder="&#x1D578;" 									maxlength="5" 	class="number_input" 	type="text" />
-												<input id="glyph_{{glyph.pk}}_mainz_number" 		value="{{ glyph.mainz_number }}" 			placeholder="PAK" 												maxlength="12" 	class="number_input" 	type="text" />
-												
-											</div>
-										</li>
-										
-									{% endfor %}
-								</ol>
-								
+											</li>
+											
+										{% endfor %}
+									</ol>
+									
+								</div>
 							</div>
-						</div>
+						<!-- </div> -->
 					
 					</div>
 				{% endfor %}

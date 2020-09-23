@@ -49,6 +49,8 @@ def ManuscriptList(request, text_id):
 		
 		return render(request, 'Sobti/manuscripts.html', context)
 
+
+
 def PageList(request, text_id, manuscript_id):
 	manuscript = get_object_or_404(Manuscript, pk=manuscript_id)
 	
@@ -65,11 +67,11 @@ def PageList(request, text_id, manuscript_id):
 	
 	if request.method == 'POST':
 		form = NewPageForm(request.POST, request.FILES)
-		p = form.save(commit=False)
-		p.manuscript = manuscript
+		page = form.save(commit=False)
+		page.manuscript = manuscript
 		form.save()
 		
-		sError = PageProcess(p)
+		sError = PageProcess(page)
 		if sError is None:
 			return HttpResponseRedirect(reverse('sobti:pages', args=(text_id,manuscript_id,)))
 		else:
@@ -91,15 +93,26 @@ def PageList(request, text_id, manuscript_id):
 	
 def PageDelete(request, text_id, manuscript_id, page_id):
 	
-	# page = get_object_or_404(Page, pk=page_id)
+	page = get_object_or_404(Page, pk=page_id)
+	vPages = [page]
 	
-	m = get_object_or_404(Manuscript, pk=manuscript_id)
-	
-	for page in m.page_set.all():
+	# m = get_object_or_404(Manuscript, pk=manuscript_id)
+	# vPages = m.page_set.all()
+	for page in vPages:
+		
+		time_zero = time.time()
 		
 		if os.path.isdir(GetPageDataPath(page,True)):
 			shutil.rmtree(GetPageDataPath(page,True))
+			
+		print('Deleting files: Time elapsed: %f' % (time.time()-time_zero))
+		time_zero = time.time()
+		
 		page.delete()
+		
+		print('Deleting db stuff: Time elapsed: %f' % (time.time()-time_zero))
+		time_zero = time.time()
+		
 		
 		# && BEGIN DEBUG OUTPUT &&
 		print('\x1b[0;31;40m' + ('🗙'*80))
@@ -131,14 +144,16 @@ def PageDetail(request, text_id, manuscript_id, page_id):
 								'number_in_line': dbGlyph.number_in_line,
 								'number_in_page': dbGlyph.number_in_page,
 								'unicode_glyphs': dbGlyph.unicode_glyphs,
-								'polygon': GetObjectPolygon(dbGlyph,'glyph') } )
+								'polygon': [list(xy) for xy in dbGlyph.shape] } )
 		
 		vdLine.append( {	'pk': dbLine.pk, 
 							'number_in_page': dbLine.number_in_page,
 							'number_in_manuscript': dbLine.number_in_manuscript,
-							'polygon': GetObjectPolygon(dbLine,'line'),
+							'polygon': [list(xy) for xy in dbLine.shape],
 							'glyphs': vdGlyph } )
-	
+		
+		# break
+		
 	# Deal with an empty layer set (when the image hasn't been processed properly)
 	if page.layer_set.count() <= 0:
 		jsDataPackage = [] # Send empty data if it doesn't get filled
@@ -155,11 +170,18 @@ def PageDetail(request, text_id, manuscript_id, page_id):
 				'data_package': jsDataPackage,
 				'glyph_max_width': iMaxWidth,
 				'error_message': "ⲙⲡⲟⲩϫⲓⲙⲓ ⲙⲡⲓϫⲟⲙ",
-				'template_filename': sTemplateFilename}
+				'template_filename': sTemplateFilename }
+	
 	return render(request, sTemplateFilename, context)
 
+from django.db.models import Q
+# Q(alias__exact='')
 
-
+def SignList(request):
+	vGlyphs = Glyph.objects.exclude(Q(unicode_glyphs__exact='')).order_by('unicode_glyphs')
+	sTemplateFilename = 'Sobti/signlist.html'
+	context = {'glyphs': vGlyphs}
+	return render(request, sTemplateFilename, context) 
 
 def ImageProcessing(request, text_id, manuscript_id, page_id):
 	page = get_object_or_404(Page, pk=page_id)

@@ -13,28 +13,19 @@
 
 {% block content %}
 
-	{% if page %}
-		<div class="dashboard">
-			<div class="header">
-				<h1>
-					<a href="{% url 'sobti:texts' %}">𓉐</a>
-					<a href="{% url 'sobti:manuscripts' page.manuscript.text.id %}">{{ page.manuscript.text.title }}</a> —	
-					<a href="{% url 'sobti:pages' page.manuscript.text.id page.manuscript.id %}">{{ page.manuscript.collection.name }}: {{ page.manuscript.accession_number }}</a>, 
-					Page {{ page.number_in_manuscript }}
-				</h1>
-			</div>
-				
-			<div class="work_surface">
-					
-				<div class="text_wrapper">
-					<canvas id="facsimile">loading...</canvas>
-				</div>
-				
-				{% block sign_list %}{% endblock sign_list %}
-			</div>
-		</div>
-	{% endif %}
-	
+<table>
+
+{% for glyph in glyphs %}
+	<tr>
+		<td><img src="{{ glyph.image.url }}" /></td>
+		<td>{{ glyph.unicode_glyphs }}</td>
+		<td>"{{ glyph.image.name }}"</td>
+	</tr>
+{% empty %}
+	<tr>No Glyphs</tr>
+{% endfor %}
+</table>
+
 {% endblock content %}
 
 
