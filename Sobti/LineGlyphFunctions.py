@@ -201,6 +201,7 @@ def AnalyzeManuscript(page):
 	# Add line mask layers to the ManuscriptCollection
 	for i in range(1,6):
 		if vIsLine[i]:
+			print('layer %i' % (i+1))
 			img = cv2.imread(dbLayers[i].image.path, cv2.IMREAD_GRAYSCALE)
 			vManuscript.populate(img, vIsLine[i])
 	
@@ -209,6 +210,7 @@ def AnalyzeManuscript(page):
 	# Add glyph mask layers to the ManuscriptCollection
 	for i in range(1,6):
 		if not vIsLine[i]:
+			print('layer %i' % (i+1))
 			img = cv2.imread(dbLayers[i].image.path, cv2.IMREAD_GRAYSCALE)
 			vManuscript.populate(img, vIsLine[i])
 	
@@ -246,34 +248,6 @@ def AnalyzeManuscript(page):
 		imLine = Image.fromarray(cv2.cvtColor(line.text_image, cv2.COLOR_RGBA2BGRA))
 		dbLine = page.line_set.create(number_in_page=i+1, image=DjangoImage(imLine, sRelFilename), shape=lsShape)
 		
-		# 
-		# print('LineSet Time elapsed: %f' % (time.time()-time_zero))
-		# time_zero = time.time()
-		# 
-		# vPoly = dbLine.polygon_set.create(polygon_type='line', glyph=None,
-		# 		x_min=line.Xmin, y_min=line.Ymin, x_max=line.Xmax, y_max=line.Ymax, 
-		# 		x_cent=line.Xc, y_cent=line.Yc)
-		# 
-		# 
-		# print('Polygon Time elapsed: %f' % (time.time()-time_zero))
-		# time_zero = time.time()
-		# 
-		# for iPt in range(line.polygon.shape[0]):
-		# 	vI = line.polygon[iPt,:]
-		# 	vPoly.polygonpoint_set.create(x_coordinate=vI[0],y_coordinate=vI[1],t_coordinate=iPt+1)
-		# 
-		# print('Poly Points Time elapsed: %f' % (time.time()-time_zero))
-		# time_zero = time.time()
-		# 
-		# 
-		# for iPt in range(line.polygon.shape[0]):
-		# 	vI = line.polygon[iPt,:]
-		# 	# vPoly.polygonpoint_set.create(x_coordinate=vI[0],y_coordinate=vI[1],t_coordinate=iPt+1)
-		# 	vPolyPoint = m.PolygonPoint(polygon=vPoly,x_coordinate=vI[0],y_coordinate=vI[1],t_coordinate=iPt+1)
-		# 	vPolyPoints.append(vPolyPoint)
-		# 
-		# print('Time elapsed: %f' % (time.time()-time_zero))
-		# time_zero = time.time()
 		
 		
 		# Glyph regions in each line in the facsimile
