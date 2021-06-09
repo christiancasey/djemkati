@@ -7,7 +7,7 @@ click-plugins==1.1.1
 cligj==0.5.0
 cycler==0.10.0
 decorator==4.4.2
-Django==3.1.1
+Django==3.1.10
 docopt==0.6.2
 Fiona==1.8.17
 geopandas==0.8.1
